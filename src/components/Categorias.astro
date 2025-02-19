@@ -1,0 +1,18 @@
+---
+const categorias = [
+  "dragon ball",
+  "dragon ball z",
+  "dragon ball super",
+  "dragon ball gt",
+];
+---
+<img src="./titulo/titulo.png" alt="mundo de dragón ball" class="h-18 w-auto mx-auto">
+<section class="max-w-4xl mx-2 bg-amber-50 my-2  p-4 flex justify-center items-center gap-1 rounded-b-md md:mx-auto">
+  {
+    categorias.map((categoria) => (
+      <button class="  bg-amber-500 py-2 px-4 cursor-pointer hover:bg-amber-400 rounded-full ">
+        <p class="font-semibold text-xs text-amber-50 capitalize">{categoria}</p>
+      </button>
+    ))
+  }
+</section>
