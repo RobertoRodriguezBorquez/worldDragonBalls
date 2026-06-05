@@ -4,22 +4,48 @@ import PowerBar from "@components/personajes/PowerBar.astro";
 import { getFeaturedCharacters, parseKi } from "@lib/api";
 
 const characters = await getFeaturedCharacters();
-const aParam = Number(Astro.url.searchParams.get("a")) || characters[0].id;
-const bParam = Number(Astro.url.searchParams.get("b")) || characters[1].id;
-const a = characters.find((c) => c.id === aParam) ?? characters[0];
-const b = characters.find((c) => c.id === bParam) ?? characters[1];
+
+const fallbackA = characters[0];
+const fallbackB = characters[1] ?? characters[0];
+
+const queryA = Number(Astro.url.searchParams.get("a"));
+const queryB = Number(Astro.url.searchParams.get("b"));
+const aParam = Number.isFinite(queryA) && queryA > 0 ? queryA : fallbackA?.id;
+const bParam = Number.isFinite(queryB) && queryB > 0 ? queryB : fallbackB?.id;
+const a = characters.find((c) => c.id === aParam) ?? fallbackA;
+const b = characters.find((c) => c.id === bParam) ?? fallbackB;
+
+if (!a || !b) {
+  throw new Error("No hay personajes disponibles para comparar.");
+}
 
 const kiA = parseKi(a.ki);
 const kiB = parseKi(b.ki);
 const max = Math.max(kiA, kiB, 1);
 const winner = kiA === kiB ? null : kiA > kiB ? a : b;
+
+const charactersJson = JSON.stringify(
+  characters.map((c) => ({
+    id: c.id,
+    name: c.name,
+    ki: c.ki,
+    race: c.race,
+    image: c.image,
+  }))
+);
 ---
 
 <Layout
   title="Comparador | World Dragon Balls"
   description="Compara el nivel de Ki de dos personajes de Dragon Ball."
 >
-  <section class="mx-auto max-w-6xl px-4 py-6">
+  <section
+    class="mx-auto max-w-6xl px-4 py-6"
+    data-comparador
+    data-characters={charactersJson}
+    data-initial-a={a.id}
+    data-initial-b={b.id}
+  >
     <header class="mb-6 text-center">
       <h1 class="text-3xl font-extrabold text-[var(--color-text)] md:text-4xl">
         Comparador de poder
@@ -30,7 +56,7 @@ const winner = kiA === kiB ? null : kiA > kiB ? a : b;
     </header>
 
     <form
-      method="get"
+      id="comparador-form"
       class="mb-6 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:grid-cols-2"
     >
       <label class="flex flex-col gap-1">
@@ -38,6 +64,7 @@ const winner = kiA === kiB ? null : kiA > kiB ? a : b;
           Personaje A
         </span>
         <select
+          id="select-a"
           name="a"
           class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
         >
@@ -51,6 +78,7 @@ const winner = kiA === kiB ? null : kiA > kiB ? a : b;
           Personaje B
         </span>
         <select
+          id="select-b"
           name="b"
           class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
         >
@@ -67,13 +95,15 @@ const winner = kiA === kiB ? null : kiA > kiB ? a : b;
       </button>
     </form>
 
-    <div class="grid gap-6 md:grid-cols-2">
+    <div id="comparador-results" class="grid gap-6 md:grid-cols-2">
       {[a, b].map((c, idx) => {
         const ki = idx === 0 ? kiA : kiB;
         const color = idx === 0 ? "orange" : "blue";
         const isWinner = winner && winner.id === c.id;
         return (
           <article
+            data-card-id={c.id}
+            data-card-slot={idx === 0 ? "a" : "b"}
             class={`rounded-3xl border-2 p-4 transition ${isWinner ? "border-[var(--color-ki-yellow)] ki-pulse" : "border-[var(--color-border)]"} bg-[var(--color-surface)]`}
           >
             <div class="mb-3 flex items-center gap-3">
@@ -103,8 +133,164 @@ const winner = kiA === kiB ? null : kiA > kiB ? a : b;
       })}
     </div>
 
-    <p class="mt-6 text-center text-sm font-semibold text-[var(--color-text)]">
+    <p
+      id="comparador-summary"
+      class="mt-6 text-center text-sm font-semibold text-[var(--color-text)]"
+    >
       {winner ? `🏆 ${winner.name} gana con ${(winner.id === a.id ? kiA : kiB).toLocaleString("es-ES")} de Ki` : "Empate"}
     </p>
   </section>
+
+  <script is:inline>
+    (() => {
+      const section = document.querySelector("[data-comparador]");
+      if (!section) return;
+      const characters = JSON.parse(section.dataset.characters || "[]");
+      const form = document.getElementById("comparador-form");
+      const selectA = document.getElementById("select-a");
+      const selectB = document.getElementById("select-b");
+      const results = document.getElementById("comparador-results");
+      const summary = document.getElementById("comparador-summary");
+      if (!form || !selectA || !selectB || !results || !summary) return;
+
+      const byId = new Map(characters.map((c) => [c.id, c]));
+
+      const parseKi = (ki) => {
+        if (!ki) return 0;
+        const s = String(ki).toLowerCase().trim();
+        if (s === "unknown" || s === "?" || s === "") return 0;
+        const cleaned = s.replace(/\./g, "").replace(/,/g, "");
+        const n = Number.parseInt(cleaned, 10);
+        return Number.isFinite(n) ? n : 0;
+      };
+
+      const formatKi = (n) => n.toLocaleString("es-ES");
+
+      const escape = (s) =>
+        String(s).replace(/[&<>"']/g, (ch) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])
+        );
+
+      const renderCard = (char, slot, ki, max, isWinner) => {
+        const pct = max > 0 ? Math.min(100, Math.max(2, (ki / max) * 100)) : 0;
+        const colorVar = slot === "a" ? "--color-ki-orange" : "--color-ki-blue";
+        const barColor = `var(${colorVar})`;
+        return `
+          <article
+            data-card-id="${char.id}"
+            data-card-slot="${slot}"
+            class="rounded-3xl border-2 p-4 transition ${isWinner ? "border-[var(--color-ki-yellow)] ki-pulse" : "border-[var(--color-border)]"} bg-[var(--color-surface)]"
+          >
+            <div class="mb-3 flex items-center gap-3">
+              <img
+                src="${escape(char.image)}"
+                alt="${escape(char.name)}"
+                referrerpolicy="no-referrer"
+                class="h-20 w-20 rounded-full border-2 border-[var(--color-accent)] bg-[var(--color-bg-muted)] object-contain p-1"
+              />
+              <div class="flex-1">
+                <p class="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">
+                  ${escape(char.race)}
+                </p>
+                <h2 class="text-xl font-extrabold text-[var(--color-text)]">
+                  ${escape(char.name)}
+                </h2>
+              </div>
+              ${isWinner
+                ? `<span class="rounded-full bg-[var(--color-ki-yellow)] px-2 py-0.5 text-xs font-bold uppercase text-black">Gana</span>`
+                : ""}
+            </div>
+            <div>
+              <div class="mb-1 flex items-baseline justify-between text-xs">
+                <span class="font-semibold text-[var(--color-text)]">Ki</span>
+                <span class="font-mono text-[var(--color-text-muted)]">${formatKi(ki)}</span>
+              </div>
+              <div class="h-3 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
+                <div
+                  class="power-bar h-full rounded-full transition-all duration-1000"
+                  style="width: ${pct}%; background: linear-gradient(90deg, ${barColor}, var(--color-ki-yellow));"
+                  data-target-width="${pct}"
+                />
+              </div>
+            </div>
+          </article>
+        `;
+      };
+
+      const update = (aId, bId, pushUrl = true) => {
+        const charA = byId.get(Number(aId)) || characters[0];
+        const charB = byId.get(Number(bId)) || characters[1] || characters[0];
+        if (!charA || !charB) return;
+
+        const kiA = parseKi(charA.ki);
+        const kiB = parseKi(charB.ki);
+        const max = Math.max(kiA, kiB, 1);
+        const winner = kiA === kiB ? null : kiA > kiB ? charA : charB;
+        const isWinnerA = winner && winner.id === charA.id;
+        const isWinnerB = winner && winner.id === charB.id;
+
+        results.innerHTML =
+          renderCard(charA, "a", kiA, max, !!isWinnerA) +
+          renderCard(charB, "b", kiB, max, !!isWinnerB);
+
+        if (winner) {
+          const winnerKi = winner.id === charA.id ? kiA : kiB;
+          summary.textContent = `🏆 ${winner.name} gana con ${formatKi(winnerKi)} de Ki`;
+        } else {
+          summary.textContent = "Empate";
+        }
+
+        requestAnimationFrame(() => {
+          document.querySelectorAll(".power-bar").forEach((el) => {
+            const target = Number(el.dataset.targetWidth || 0);
+            el.style.width = "0%";
+            requestAnimationFrame(() => {
+              el.style.width = target + "%";
+            });
+          });
+        });
+
+        if (pushUrl) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("a", String(charA.id));
+          url.searchParams.set("b", String(charB.id));
+          window.history.pushState({ a: charA.id, b: charB.id }, "", url);
+        }
+      };
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        update(selectA.value, selectB.value);
+      });
+
+      selectA.addEventListener("change", () => {
+        update(selectA.value, selectB.value);
+      });
+      selectB.addEventListener("change", () => {
+        update(selectA.value, selectB.value);
+      });
+
+      window.addEventListener("popstate", () => {
+        const url = new URL(window.location.href);
+        const aId = Number(url.searchParams.get("a"));
+        const bId = Number(url.searchParams.get("b"));
+        if (Number.isFinite(aId) && byId.has(aId)) selectA.value = String(aId);
+        if (Number.isFinite(bId) && byId.has(bId)) selectB.value = String(bId);
+        update(selectA.value, selectB.value, false);
+      });
+
+      const initialA = Number(section.dataset.initialA);
+      const initialB = Number(section.dataset.initialB);
+      const url = new URL(window.location.href);
+      const queryA = Number(url.searchParams.get("a"));
+      const queryB = Number(url.searchParams.get("b"));
+      const targetA = Number.isFinite(queryA) && byId.has(queryA) ? queryA : initialA;
+      const targetB = Number.isFinite(queryB) && byId.has(queryB) ? queryB : initialB;
+      if (targetA !== initialA || targetB !== initialB) {
+        selectA.value = String(targetA);
+        selectB.value = String(targetB);
+        update(targetA, targetB, false);
+      }
+    })();
+  </script>
 </Layout>
