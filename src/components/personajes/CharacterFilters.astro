@@ -1,0 +1,70 @@
+---
+interface Props {
+  races: string[];
+}
+const { races } = Astro.props;
+---
+
+<form
+  id="character-filters"
+  class="mb-4 flex flex-col gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 md:flex-row md:items-center"
+  onsubmit="return false"
+>
+  <label class="flex-1">
+    <span class="sr-only">Buscar personaje</span>
+    <input
+      type="search"
+      name="q"
+      id="filter-q"
+      placeholder="Buscar personaje..."
+      class="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+    />
+  </label>
+
+  <label>
+    <span class="sr-only">Filtrar por raza</span>
+    <select
+      name="race"
+      id="filter-race"
+      class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+    >
+      <option value="">Todas las razas</option>
+      {races.map((r) => <option value={r.toLowerCase()}>{r}</option>)}
+    </select>
+  </label>
+
+  <a
+    href="/comparador"
+    class="rounded-full bg-[var(--color-accent)] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
+  >
+    Comparar
+  </a>
+</form>
+
+<script is:inline>
+  (() => {
+    const q = document.getElementById("filter-q");
+    const race = document.getElementById("filter-race");
+    const grid = document.getElementById("character-grid");
+    const empty = document.getElementById("empty-state");
+    if (!q || !race || !grid) return;
+
+    const apply = () => {
+      const term = (q.value || "").toLowerCase().trim();
+      const r = (race.value || "").toLowerCase().trim();
+      let visible = 0;
+      grid.querySelectorAll(".character-card").forEach((el) => {
+        const card = el;
+        const name = card.dataset.name || "";
+        const cardRace = card.dataset.race || "";
+        const ok = (!term || name.includes(term)) && (!r || cardRace === r);
+        card.style.display = ok ? "" : "none";
+        if (ok) visible++;
+      });
+      if (empty) empty.classList.toggle("hidden", visible !== 0);
+    };
+
+    q.addEventListener("input", apply);
+    race.addEventListener("change", apply);
+  })();
+</script>

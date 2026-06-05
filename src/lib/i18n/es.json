@@ -1,0 +1,65 @@
+{
+  "site": {
+    "title": "World Dragon Balls",
+    "description": "Encuentra toda la info de los Personajes de Dragon Ball"
+  },
+  "nav": {
+    "home": "Inicio",
+    "characters": "Personajes",
+    "favorites": "Favoritos",
+    "compare": "Comparador"
+  },
+  "home": {
+    "hero": {
+      "title": "Bienvenido al mundo Dragon Ball",
+      "subtitle": "Explora a tus personajes favoritos, descubre sus transformaciones y compara su poder."
+    },
+    "timeline": {
+      "title": "Línea de tiempo de las sagas",
+      "subtitle": "Haz clic en una saga para ver sus personajes."
+    },
+    "featured": {
+      "title": "Personajes destacados",
+      "viewAll": "Ver todos los personajes"
+    }
+  },
+  "characters": {
+    "title": "Catálogo de personajes",
+    "search": "Buscar personaje...",
+    "filterSaga": "Filtrar por saga",
+    "filterRace": "Filtrar por raza",
+    "all": "Todos",
+    "noResults": "No se encontraron personajes.",
+    "viewDetail": "Ver detalle"
+  },
+  "character": {
+    "ki": "Ki",
+    "maxKi": "Ki máximo",
+    "race": "Raza",
+    "gender": "Género",
+    "affiliation": "Afiliación",
+    "origin": "Planeta de origen",
+    "transformations": "Transformaciones",
+    "noTransformations": "Sin transformaciones registradas.",
+    "addFavorite": "Agregar a favoritos",
+    "removeFavorite": "Quitar de favoritos",
+    "compareWith": "Comparar con..."
+  },
+  "favorites": {
+    "title": "Mis favoritos",
+    "empty": "Aún no tienes favoritos. Haz clic en ☆ en cualquier personaje para guardarlo."
+  },
+  "compare": {
+    "title": "Comparador de poder",
+    "subtitle": "Elige dos personajes y compara su nivel de Ki.",
+    "selectA": "Personaje A",
+    "selectB": "Personaje B",
+    "vs": "VS",
+    "winner": "¡{name} gana!"
+  },
+  "common": {
+    "back": "Volver",
+    "toggleTheme": "Cambiar tema",
+    "language": "Idioma"
+  }
+}

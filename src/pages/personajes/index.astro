@@ -1,0 +1,28 @@
+---
+import Layout from "@layouts/Layout.astro";
+import CharacterGrid from "@components/personajes/CharacterGrid.astro";
+import CharacterFilters from "@components/personajes/CharacterFilters.astro";
+import { getFeaturedCharacters } from "@lib/api";
+
+const characters = await getFeaturedCharacters();
+const races = [...new Set(characters.map((c) => c.race).filter(Boolean))].sort();
+---
+
+<Layout
+  title="Personajes | World Dragon Balls"
+  description="Catálogo completo de personajes de Dragon Ball: Goku, Vegeta, Frieza y más."
+>
+  <section class="mx-auto max-w-7xl px-4 py-6">
+    <header class="mb-4">
+      <h1 class="text-3xl font-extrabold text-[var(--color-text)] md:text-4xl">
+        Catálogo de personajes
+      </h1>
+      <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+        {characters.length} personajes disponibles
+      </p>
+    </header>
+
+    <CharacterFilters races={races} />
+    <CharacterGrid characters={characters} />
+  </section>
+</Layout>

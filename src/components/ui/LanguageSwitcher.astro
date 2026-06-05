@@ -1,0 +1,15 @@
+---
+const current = Astro.url.pathname;
+const isEnglish = current.startsWith("/en/") || current === "/en";
+---
+
+<a
+  href={isEnglish ? current.replace(/^\/en/, "") || "/" : `/en${current === "/" ? "" : current}`}
+  aria-label="Cambiar idioma"
+  data-i18n-aria="common.language"
+  class="lang-switcher inline-flex h-9 items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-text)] transition hover:scale-105 hover:bg-[var(--color-bg-muted)]"
+>
+  <span class={isEnglish ? "opacity-50" : ""}>ES</span>
+  <span class="opacity-30">/</span>
+  <span class={!isEnglish ? "opacity-50" : ""}>EN</span>
+</a>

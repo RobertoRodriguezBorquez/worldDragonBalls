@@ -1,1 +1,74 @@
 @import "tailwindcss";
+@import "./theme.css";
+@import "@fontsource-variable/onest";
+
+/* Tailwind 4 dark mode variant driven by [data-theme="dark"] */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Token maps for Tailwind utilities */
+@theme {
+  --color-ki-orange: var(--color-ki-orange);
+  --color-ki-blue: var(--color-ki-blue);
+  --color-ki-yellow: var(--color-ki-yellow);
+  --color-ki-red: var(--color-ki-red);
+  --color-ki-purple: var(--color-ki-purple);
+  --color-bg-base: var(--color-bg);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-muted: var(--color-bg-muted);
+  --color-surface: var(--color-surface);
+  --color-text-base: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-border-base: var(--color-border);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --font-sans: "Onest Variable", system-ui, sans-serif;
+}
+
+/* Scroll-snap helpers for timeline */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+
+/* View-timeline entrance for cards */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease both;
+}
+
+/* Ki pulse glow */
+@keyframes ki-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--color-ki-yellow);
+  }
+  50% {
+    box-shadow: 0 0 24px 8px var(--color-ki-yellow);
+  }
+}
+
+.ki-pulse {
+  animation: ki-pulse 2.4s ease-in-out infinite;
+}
+
+/* Hide scrollbar but keep scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}

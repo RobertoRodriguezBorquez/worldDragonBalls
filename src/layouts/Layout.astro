@@ -1,40 +1,121 @@
 ---
-import "../styles/global.css"; /* cargar tailwind */
-// Supports weights 100-900
-import '@fontsource-variable/onest';
+import "../styles/global.css";
 import Header from "@components/Header.astro";
-
 import Footer from "@components/Footer.astro";
+import { getLocaleFromUrl, getDictionary } from "@lib/i18n";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  jsonLd?: Record<string, any>;
+}
+
+const locale = getLocaleFromUrl(Astro.url);
+const dict = getDictionary(locale);
+
+const {
+  title = dict.site.title,
+  description = dict.site.description,
+  ogImage = "/presentacion/nube-fondo.png",
+  jsonLd,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "http://localhost:4321").toString();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="description"
-      content="Encuentra toda la info de los Personajes de Dragon Balls"
-    />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
     <meta name="generator" content={Astro.generator} />
-    <title>Wolrd Dragon balls</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={locale === "es" ? "es_ES" : "en_US"} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <title>{title}</title>
+
+    <!-- Anti-FOUC theme bootstrap -->
+    <script is:inline>
+      (() => {
+        try {
+          const saved = localStorage.getItem("db:theme");
+          const sys = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          const t = saved || sys;
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+
+    {jsonLd && (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
   </head>
-  <body>
+  <body class="min-h-screen font-sans">
     <Header />
     <main>
       <slot />
     </main>
     <Footer />
+
+    <!-- i18n client switcher (post-load) -->
+    <script is:inline>
+      (() => {
+        const path = location.pathname;
+        const isEn = path.startsWith("/en/") || path === "/en";
+        const dicts = {
+          es: {
+            "nav.characters": "Personajes",
+            "nav.favorites": "Favoritos",
+            "nav.compare": "Comparador",
+            "common.toggleTheme": "Cambiar tema",
+            "common.language": "Idioma",
+          },
+          en: {
+            "nav.characters": "Characters",
+            "nav.favorites": "Favorites",
+            "nav.compare": "Compare",
+            "common.toggleTheme": "Toggle theme",
+            "common.language": "Language",
+          },
+        };
+        const dict = isEn ? dicts.en : dicts.es;
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const k = el.getAttribute("data-i18n");
+          if (dict[k]) el.textContent = dict[k];
+        });
+        document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+          const k = el.getAttribute("data-i18n-aria");
+          if (dict[k]) el.setAttribute("aria-label", dict[k]);
+        });
+      })();
+    </script>
   </body>
 </html>
 
 <style>
   html,
   body {
-    font-family: 'Onest Variable', sans-serif;
+    font-family: "Onest Variable", system-ui, sans-serif;
     margin: 0;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
   }
 </style>

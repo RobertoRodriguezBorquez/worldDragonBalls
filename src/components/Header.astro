@@ -1,6 +1,39 @@
-<header class="bg-white flex place-content-between px-4 py-2 ">
-  <div>
-    <img src="./logo/logo-header.webp" alt="imagen logo " class="h-12 w-auto">
+---
+import ThemeToggle from "./ui/ThemeToggle.astro";
+import LanguageSwitcher from "./ui/LanguageSwitcher.astro";
+---
+
+<header class="sticky top-0 z-40 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]/90 px-4 py-2 backdrop-blur">
+  <a href="/" class="flex items-center gap-2" aria-label="Inicio">
+    <img src="/logo/logo-header.webp" alt="Logo World Dragon Balls" class="h-12 w-auto" />
+  </a>
+
+  <nav class="hidden items-center gap-2 md:flex" aria-label="Principal">
+    <a
+      href="/personajes"
+      data-i18n="nav.characters"
+      class="rounded-full px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-bg-muted)]"
+    >
+      Personajes
+    </a>
+    <a
+      href="/favoritos"
+      data-i18n="nav.favorites"
+      class="rounded-full px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-bg-muted)]"
+    >
+      Favoritos
+    </a>
+    <a
+      href="/comparador"
+      data-i18n="nav.compare"
+      class="rounded-full px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-bg-muted)]"
+    >
+      Comparador
+    </a>
+  </nav>
+
+  <div class="flex items-center gap-2">
+    <LanguageSwitcher />
+    <ThemeToggle />
   </div>
-  <img src="./svg/dragonball-z.svg" alt="dragón ball logo" class="h-14 w-auto">
 </header>

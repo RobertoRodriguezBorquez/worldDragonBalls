@@ -1,0 +1,85 @@
+---
+import Layout from "@layouts/Layout.astro";
+import { getFeaturedCharacters } from "@lib/api";
+import CharacterCard from "@components/personajes/CharacterCard.astro";
+
+const all = await getFeaturedCharacters();
+---
+
+<Layout
+  title="Mis favoritos | World Dragon Balls"
+  description="Tus personajes favoritos de Dragon Ball guardados."
+>
+  <section class="mx-auto max-w-7xl px-4 py-6">
+    <h1 class="mb-1 text-3xl font-extrabold text-[var(--color-text)] md:text-4xl">
+      Mis favoritos
+    </h1>
+    <p class="mb-4 text-sm text-[var(--color-text-muted)]">
+      Guardados localmente en tu navegador.
+    </p>
+
+    <div
+      id="favorites-empty"
+      class="hidden rounded-2xl border border-dashed border-[var(--color-border)] p-10 text-center text-[var(--color-text-muted)]"
+    >
+      <p class="text-4xl">⭐</p>
+      <p class="mt-2">Aún no tienes favoritos.</p>
+      <p class="text-xs">
+        Haz clic en <span class="font-bold">☆</span> en cualquier personaje para guardarlo.
+      </p>
+      <a
+        href="/personajes"
+        class="mt-4 inline-block rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white"
+      >
+        Ir al catálogo
+      </a>
+    </div>
+
+    <div
+      id="favorites-grid"
+      class="hidden grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+    >
+      {all.map((c) => (
+        <div data-fav-id={c.id} class="hidden">
+          <CharacterCard character={c} />
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<script is:inline>
+  (() => {
+    const KEY = "db:favorites";
+    const grid = document.getElementById("favorites-grid");
+    const empty = document.getElementById("favorites-empty");
+    if (!grid || !empty) return;
+
+    const get = () => {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) || "[]");
+      } catch {
+        return [];
+      }
+    };
+
+    const render = () => {
+      const favs = get();
+      const ids = new Set(favs.map((f) => f.id));
+      let visible = 0;
+      grid.querySelectorAll("[data-fav-id]").forEach((el) => {
+        const id = Number(el.dataset.favId);
+        const show = ids.has(id);
+        el.classList.toggle("hidden", !show);
+        if (show) visible++;
+      });
+      grid.classList.toggle("hidden", visible === 0);
+      grid.classList.toggle("grid", visible > 0);
+      empty.classList.toggle("hidden", visible > 0);
+    };
+
+    document.addEventListener("favorites:change", render);
+    document.addEventListener("DOMContentLoaded", render);
+    render();
+  })();
+</script>

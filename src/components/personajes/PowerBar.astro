@@ -1,0 +1,47 @@
+---
+interface Props {
+  label: string;
+  value: number;
+  max: number;
+  color?: "orange" | "blue" | "yellow" | "red" | "purple";
+}
+const { label, value, max, color = "orange" } = Astro.props;
+const pct = max > 0 ? Math.min(100, Math.max(2, (value / max) * 100)) : 0;
+
+const colorMap: Record<string, string> = {
+  orange: "var(--color-ki-orange)",
+  blue: "var(--color-ki-blue)",
+  yellow: "var(--color-ki-yellow)",
+  red: "var(--color-ki-red)",
+  purple: "var(--color-ki-purple)",
+};
+const barColor = colorMap[color] ?? colorMap.orange;
+---
+
+<div>
+  <div class="mb-1 flex items-baseline justify-between text-xs">
+    <span class="font-semibold text-[var(--color-text)]">{label}</span>
+    <span class="font-mono text-[var(--color-text-muted)]">{value.toLocaleString("es-ES")}</span>
+  </div>
+  <div class="h-3 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
+    <div
+      class="power-bar h-full rounded-full transition-all duration-1000"
+      style={`width: ${pct}%; background: linear-gradient(90deg, ${barColor}, var(--color-ki-yellow));`}
+      data-target-width={pct}
+    />
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll(".power-bar").forEach((el) => {
+        const target = Number(el.dataset.targetWidth || 0);
+        el.style.width = "0%";
+        requestAnimationFrame(() => {
+          el.style.width = target + "%";
+        });
+      });
+    });
+  })();
+</script>

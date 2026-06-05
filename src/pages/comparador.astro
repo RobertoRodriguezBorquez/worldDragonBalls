@@ -1,0 +1,110 @@
+---
+import Layout from "@layouts/Layout.astro";
+import PowerBar from "@components/personajes/PowerBar.astro";
+import { getFeaturedCharacters, parseKi } from "@lib/api";
+
+const characters = await getFeaturedCharacters();
+const aParam = Number(Astro.url.searchParams.get("a")) || characters[0].id;
+const bParam = Number(Astro.url.searchParams.get("b")) || characters[1].id;
+const a = characters.find((c) => c.id === aParam) ?? characters[0];
+const b = characters.find((c) => c.id === bParam) ?? characters[1];
+
+const kiA = parseKi(a.ki);
+const kiB = parseKi(b.ki);
+const max = Math.max(kiA, kiB, 1);
+const winner = kiA === kiB ? null : kiA > kiB ? a : b;
+---
+
+<Layout
+  title="Comparador | World Dragon Balls"
+  description="Compara el nivel de Ki de dos personajes de Dragon Ball."
+>
+  <section class="mx-auto max-w-6xl px-4 py-6">
+    <header class="mb-6 text-center">
+      <h1 class="text-3xl font-extrabold text-[var(--color-text)] md:text-4xl">
+        Comparador de poder
+      </h1>
+      <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+        Elige dos personajes y compara su nivel de Ki.
+      </p>
+    </header>
+
+    <form
+      method="get"
+      class="mb-6 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:grid-cols-2"
+    >
+      <label class="flex flex-col gap-1">
+        <span class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+          Personaje A
+        </span>
+        <select
+          name="a"
+          class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
+        >
+          {characters.map((c) => (
+            <option value={c.id} selected={c.id === a.id}>{c.name}</option>
+          ))}
+        </select>
+      </label>
+      <label class="flex flex-col gap-1">
+        <span class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+          Personaje B
+        </span>
+        <select
+          name="b"
+          class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
+        >
+          {characters.map((c) => (
+            <option value={c.id} selected={c.id === b.id}>{c.name}</option>
+          ))}
+        </select>
+      </label>
+      <button
+        type="submit"
+        class="md:col-span-2 rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[var(--color-accent-hover)]"
+      >
+        Comparar
+      </button>
+    </form>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      {[a, b].map((c, idx) => {
+        const ki = idx === 0 ? kiA : kiB;
+        const color = idx === 0 ? "orange" : "blue";
+        const isWinner = winner && winner.id === c.id;
+        return (
+          <article
+            class={`rounded-3xl border-2 p-4 transition ${isWinner ? "border-[var(--color-ki-yellow)] ki-pulse" : "border-[var(--color-border)]"} bg-[var(--color-surface)]`}
+          >
+            <div class="mb-3 flex items-center gap-3">
+              <img
+                src={c.image}
+                alt={c.name}
+                referrerpolicy="no-referrer"
+                class="h-20 w-20 rounded-full border-2 border-[var(--color-accent)] bg-[var(--color-bg-muted)] object-contain p-1"
+              />
+              <div class="flex-1">
+                <p class="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">
+                  {c.race}
+                </p>
+                <h2 class="text-xl font-extrabold text-[var(--color-text)]">
+                  {c.name}
+                </h2>
+              </div>
+              {isWinner && (
+                <span class="rounded-full bg-[var(--color-ki-yellow)] px-2 py-0.5 text-xs font-bold uppercase text-black">
+                  Gana
+                </span>
+              )}
+            </div>
+            <PowerBar label="Ki" value={ki} max={max} color={color} />
+          </article>
+        );
+      })}
+    </div>
+
+    <p class="mt-6 text-center text-sm font-semibold text-[var(--color-text)]">
+      {winner ? `🏆 ${winner.name} gana con ${(winner.id === a.id ? kiA : kiB).toLocaleString("es-ES")} de Ki` : "Empate"}
+    </p>
+  </section>
+</Layout>

@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# tooling (opencode + pnpm auto-generated)
+.agents/
+skills-lock.json
+pnpm-workspace.yaml

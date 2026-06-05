@@ -1,14 +1,40 @@
 ---
-import CarrauzelImg from "@components/PresentacionVideo.astro";
-
-import Categorias from "@components/Categorias.astro";
-import ContenidoPrincipal from "@components/ContenidoPrincipal.astro";
-
 import Layout from "@layouts/Layout.astro";
+import Categorias from "@components/Categorias.astro";
+import PresentacionVideo from "@components/PresentacionVideo.astro";
+import SagasTimeline from "@components/timeline/SagasTimeline.astro";
+import CharacterGrid from "@components/personajes/CharacterGrid.astro";
+import { getFeaturedCharacters } from "@lib/api";
+
+const featured = (await getFeaturedCharacters()).slice(0, 8);
 ---
 
-<Layout titte="Personajes de Dragón balls">
-  <CarrauzelImg />
+<Layout
+  title="World Dragon Balls | Inicio"
+  description="Explora personajes, sagas y transformaciones del universo Dragon Ball."
+>
+  <PresentacionVideo />
   <Categorias />
-  <ContenidoPrincipal />
+
+  <section class="mx-auto mt-8 max-w-7xl px-4">
+    <header class="mb-4 flex items-end justify-between">
+      <div>
+        <h2 class="text-2xl font-extrabold text-[var(--color-text)] md:text-3xl">
+          Personajes destacados
+        </h2>
+        <p class="text-sm text-[var(--color-text-muted)]">
+          Los Saiyans y villanos más icónicos.
+        </p>
+      </div>
+      <a
+        href="/personajes"
+        class="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
+      >
+        Ver todos
+      </a>
+    </header>
+    <CharacterGrid characters={featured} />
+  </section>
+
+  <SagasTimeline />
 </Layout>

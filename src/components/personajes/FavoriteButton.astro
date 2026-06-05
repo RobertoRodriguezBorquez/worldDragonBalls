@@ -1,0 +1,82 @@
+---
+interface Props {
+  id: number;
+  name: string;
+  compact?: boolean;
+}
+const { id, name, compact = false } = Astro.props;
+---
+
+<button
+  type="button"
+  class={`fav-btn inline-flex items-center gap-1 rounded-full text-lg transition active:scale-95 ${compact ? "h-7 w-7 justify-center" : "px-3 py-1.5 bg-[var(--color-accent)] text-white font-semibold hover:bg-[var(--color-accent-hover)]"}`}
+  data-character-id={id}
+  data-character-name={name}
+  aria-pressed="false"
+  aria-label="Agregar a favoritos"
+>
+  <span class="fav-icon">☆</span>
+  {!compact && <span class="text-sm fav-label">Favorito</span>}
+</button>
+
+<script is:inline>
+  (() => {
+    const KEY = "db:favorites";
+    const get = () => {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) || "[]");
+      } catch {
+        return [];
+      }
+    };
+    const set = (arr) => {
+      try {
+        localStorage.setItem(KEY, JSON.stringify(arr));
+      } catch {}
+      document.dispatchEvent(new CustomEvent("favorites:change", { detail: arr }));
+    };
+
+    const updateIcon = (btn, isFav) => {
+      const icon = btn.querySelector(".fav-icon");
+      if (icon) icon.textContent = isFav ? "★" : "☆";
+      btn.setAttribute("aria-pressed", String(isFav));
+      btn.setAttribute(
+        "aria-label",
+        isFav ? "Quitar de favoritos" : "Agregar a favoritos"
+      );
+      if (btn.classList.contains("fav-btn")) {
+        btn.classList.toggle("text-[var(--color-ki-yellow)]", isFav);
+      }
+    };
+
+    const refreshAll = () => {
+      const favs = get();
+      document.querySelectorAll(".fav-btn").forEach((btn) => {
+        const id = Number(btn.dataset.characterId);
+        updateIcon(btn, favs.some((f) => f.id === id));
+      });
+    };
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".fav-btn");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const id = Number(btn.dataset.characterId);
+      const name = btn.dataset.characterName || "";
+      const favs = get();
+      const idx = favs.findIndex((f) => f.id === id);
+      if (idx >= 0) {
+        favs.splice(idx, 1);
+      } else {
+        favs.push({ id, name });
+      }
+      set(favs);
+      refreshAll();
+    });
+
+    document.addEventListener("favorites:change", refreshAll);
+    document.addEventListener("DOMContentLoaded", refreshAll);
+    if (document.readyState !== "loading") refreshAll();
+  })();
+</script>

@@ -1,0 +1,43 @@
+---
+const sagas = [
+  { id: "saiyan", name: "Saiyan", range: "Ep 1-35", color: "from-orange-400 to-yellow-500" },
+  { id: "frieza", name: "Namek / Frieza", range: "Ep 36-74", color: "from-purple-500 to-pink-500" },
+  { id: "cell", name: "Cell", range: "Ep 75-194", color: "from-green-500 to-emerald-600" },
+  { id: "buu", name: "Buu", range: "Ep 195-287", color: "from-pink-500 to-rose-600" },
+  { id: "beerus", name: "Beerus", range: "DB Super", color: "from-indigo-500 to-purple-600" },
+  { id: "tournament", name: "Tournament of Power", range: "DB Super", color: "from-blue-500 to-cyan-500" },
+  { id: "gt", name: "Dragon Ball GT", range: "Ep 1-64", color: "from-red-500 to-orange-500" },
+  { id: "super-hero", name: "Super Hero", range: "Película", color: "from-yellow-400 to-amber-500" },
+];
+---
+
+<section class="my-10">
+  <header class="mb-4 px-4 text-center">
+    <h2 class="text-2xl font-extrabold text-[var(--color-text)] md:text-3xl">
+      Línea de tiempo de las sagas
+    </h2>
+    <p class="text-sm text-[var(--color-text-muted)]">
+      Haz clic en una saga para ver sus personajes.
+    </p>
+  </header>
+
+  <div
+    class="no-scrollbar scroll-snap-x flex gap-4 overflow-x-auto px-4 pb-4"
+    aria-label="Sagas de Dragon Ball"
+  >
+    {sagas.map((s, i) => (
+      <a
+        href={`/personajes?saga=${s.id}`}
+        class={`group relative flex h-44 w-56 shrink-0 flex-col justify-end overflow-hidden rounded-3xl border border-[var(--color-border)] bg-gradient-to-br ${s.color} p-4 text-white shadow-md transition hover:scale-105 hover:shadow-xl`}
+        aria-label={`Saga ${s.name}`}
+      >
+        <span class="absolute right-3 top-3 rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur">
+          #{i + 1}
+        </span>
+        <h3 class="text-xl font-extrabold drop-shadow-md">{s.name}</h3>
+        <p class="text-xs opacity-90">{s.range}</p>
+        <span class="absolute -right-6 -bottom-6 h-24 w-24 rounded-full bg-white/20 blur-2xl transition group-hover:scale-150" />
+      </a>
+    ))}
+  </div>
+</section>

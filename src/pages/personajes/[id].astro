@@ -1,0 +1,128 @@
+---
+import Layout from "@layouts/Layout.astro";
+import FavoriteButton from "@components/personajes/FavoriteButton.astro";
+import PowerBar from "@components/personajes/PowerBar.astro";
+import { getFeaturedCharacters, parseKi } from "@lib/api";
+
+export async function getStaticPaths() {
+  const characters = await getFeaturedCharacters();
+  return characters.map((c) => ({
+    params: { id: String(c.id) },
+    props: { character: c },
+  }));
+}
+
+const { character } = Astro.props;
+const ki = parseKi(character.ki);
+const maxKi = parseKi(character.maxKi);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: character.name,
+  description: character.description,
+  image: character.image,
+  affiliation: character.affiliation,
+  gender: character.gender,
+};
+---
+
+<Layout
+  title={`${character.name} | World Dragon Balls`}
+  description={character.description.slice(0, 160)}
+  ogImage={character.image}
+  jsonLd={jsonLd}
+>
+  <section class="mx-auto max-w-5xl px-4 py-6">
+    <a
+      href="/personajes"
+      class="mb-4 inline-flex items-center gap-1 text-sm text-[var(--color-text-muted)] transition hover:text-[var(--color-accent)]"
+    >
+      ← Volver al catálogo
+    </a>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-gradient-to-br from-[var(--color-ki-yellow-soft)] to-[var(--color-bg-muted)] p-6">
+        <img
+          src={character.image}
+          alt={character.name}
+          class="mx-auto h-auto max-h-[500px] w-auto object-contain"
+          referrerpolicy="no-referrer"
+        />
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">
+              {character.race}
+            </p>
+            <h1 class="text-3xl font-extrabold text-[var(--color-text)] md:text-4xl">
+              {character.name}
+            </h1>
+            <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+              {character.affiliation} · {character.gender}
+            </p>
+          </div>
+          <FavoriteButton id={character.id} name={character.name} />
+        </div>
+
+        <p class="text-sm leading-relaxed text-[var(--color-text)]">
+          {character.description}
+        </p>
+
+        <div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <h2 class="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+            Nivel de poder
+          </h2>
+          <PowerBar label="Ki actual" value={ki} max={Math.max(maxKi, ki, 1)} color="orange" />
+          <div class="mt-3" />
+          <PowerBar label="Ki máximo" value={maxKi} max={Math.max(maxKi, ki, 1)} color="blue" />
+        </div>
+
+        <dl class="grid grid-cols-2 gap-2 text-sm">
+          <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+            <dt class="text-xs text-[var(--color-text-muted)]">Planeta de origen</dt>
+            <dd class="font-semibold text-[var(--color-text)]">{character.originPlanet}</dd>
+          </div>
+          <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+            <dt class="text-xs text-[var(--color-text-muted)]">Afiliación</dt>
+            <dd class="font-semibold text-[var(--color-text)]">{character.affiliation}</dd>
+          </div>
+        </dl>
+
+        <a
+          href={`/comparador?a=${character.id}`}
+          class="rounded-full bg-[var(--color-accent)] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
+        >
+          Comparar con otro personaje
+        </a>
+      </div>
+    </div>
+
+    {character.transformations?.length > 0 && (
+      <section class="mt-10">
+        <h2 class="mb-4 text-2xl font-extrabold text-[var(--color-text)]">
+          Transformaciones
+        </h2>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {character.transformations.map((t) => (
+            <article class="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition hover:shadow-md">
+              <div class="mb-2 aspect-square overflow-hidden rounded-xl bg-[var(--color-bg-muted)]">
+                <img
+                  src={t.image}
+                  alt={t.name}
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  class="h-full w-full object-contain p-1"
+                />
+              </div>
+              <h3 class="text-sm font-bold text-[var(--color-text)]">{t.name}</h3>
+              <p class="text-xs text-[var(--color-accent)]">Ki: {t.ki}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+  </section>
+</Layout>

@@ -1,0 +1,65 @@
+{
+  "site": {
+    "title": "World Dragon Balls",
+    "description": "Find all the info about Dragon Ball characters"
+  },
+  "nav": {
+    "home": "Home",
+    "characters": "Characters",
+    "favorites": "Favorites",
+    "compare": "Compare"
+  },
+  "home": {
+    "hero": {
+      "title": "Welcome to the Dragon Ball world",
+      "subtitle": "Explore your favorite characters, discover their transformations and compare their power."
+    },
+    "timeline": {
+      "title": "Saga timeline",
+      "subtitle": "Click a saga to see its characters."
+    },
+    "featured": {
+      "title": "Featured characters",
+      "viewAll": "View all characters"
+    }
+  },
+  "characters": {
+    "title": "Character catalog",
+    "search": "Search character...",
+    "filterSaga": "Filter by saga",
+    "filterRace": "Filter by race",
+    "all": "All",
+    "noResults": "No characters found.",
+    "viewDetail": "View detail"
+  },
+  "character": {
+    "ki": "Ki",
+    "maxKi": "Max Ki",
+    "race": "Race",
+    "gender": "Gender",
+    "affiliation": "Affiliation",
+    "origin": "Origin planet",
+    "transformations": "Transformations",
+    "noTransformations": "No transformations registered.",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "compareWith": "Compare with..."
+  },
+  "favorites": {
+    "title": "My favorites",
+    "empty": "No favorites yet. Click ☆ on any character to save it."
+  },
+  "compare": {
+    "title": "Power comparator",
+    "subtitle": "Pick two characters and compare their Ki level.",
+    "selectA": "Character A",
+    "selectB": "Character B",
+    "vs": "VS",
+    "winner": "{name} wins!"
+  },
+  "common": {
+    "back": "Back",
+    "toggleTheme": "Toggle theme",
+    "language": "Language"
+  }
+}
