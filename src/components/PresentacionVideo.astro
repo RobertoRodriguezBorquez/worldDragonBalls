@@ -10,8 +10,8 @@
     role="status"
     aria-live="polite"
   >
-    <div class="loader-ring" aria-hidden="true">
-      <svg viewBox="0 0 64 64" class="h-16 w-16">
+    <div class="db-spin-fast" aria-hidden="true">
+      <svg viewBox="0 0 64 64" class="h-20 w-20">
         <circle cx="32" cy="32" r="28" fill="var(--color-ki-yellow-soft)" stroke="var(--color-ki-orange)" stroke-width="3" />
         <g fill="var(--color-ki-red)">
           <polygon points="32,12 33.5,15.5 37,15.7 34.3,18 35.1,21.5 32,19.6 28.9,21.5 29.7,18 27,15.7 30.5,15.5" />
@@ -22,15 +22,15 @@
       </svg>
     </div>
 
-    <p class="mt-5 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-text)]">
-      Cargando presentación
+    <p class="mt-5 font-display text-sm uppercase tracking-[0.35em] text-[var(--color-text)] arcade-blink md:text-base">
+      Insert Coin
     </p>
 
-    <div class="mt-4 h-1.5 w-48 overflow-hidden rounded-full bg-[var(--color-border)]">
+    <div class="mt-4 h-2 w-56 overflow-hidden rounded-full border-2 border-[var(--color-ink)] bg-[var(--color-ink)]/30">
       <div
         id="loader-progress"
         class="h-full rounded-full bg-gradient-to-r from-[var(--color-ki-orange)] to-[var(--color-ki-yellow)] transition-[width] duration-200"
-        style="width: 0%"
+        style="width: 0%; box-shadow: 0 0 8px var(--color-ki-orange);"
       ></div>
     </div>
 
@@ -38,6 +38,10 @@
       <span id="loader-time">0.0s</span>
       <span class="mx-1 opacity-50">·</span>
       <span id="loader-percent">0%</span>
+    </p>
+
+    <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--color-text-muted)]">
+      Loading Game…
     </p>
   </div>
 
@@ -68,16 +72,18 @@
     <button
       type="button"
       id="hero-mute"
-      class="pointer-events-auto flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur transition hover:bg-[var(--color-ki-yellow)] hover:text-[var(--color-ink)]"
+      class="btn-arcade-ghost pointer-events-auto !border-white/40 !text-white !shadow-[2px_2px_0_rgba(255,193,7,0.6)] hover:!bg-[var(--color-ki-yellow)] hover:!text-[var(--color-ink)]"
+      style="font-size: 0.7rem; padding: 0.45rem 0.9rem;"
       aria-label="Silenciar video"
     >
-      <span id="hero-mute-icon">🔇</span>
-      <span id="hero-mute-label">Sonido off</span>
+      <span id="hero-mute-icon" aria-hidden="true">🔇</span>
+      <span id="hero-mute-label">Sound Off</span>
     </button>
 
     <div
       id="hero-progress"
-      class="pointer-events-none flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-2 py-1.5 text-white backdrop-blur"
+      class="pointer-events-none flex items-center gap-2 rounded-full border-2 border-[var(--color-ki-yellow)] bg-black/60 px-2 py-1.5 text-white backdrop-blur"
+      style="box-shadow: 2px 2px 0 rgba(255,193,7,0.6);"
       aria-label="Tiempo restante del video"
     >
       <div class="relative h-9 w-9">
@@ -87,7 +93,7 @@
             cy="18"
             r="15"
             fill="none"
-            stroke="rgba(255,255,255,0.2)"
+            stroke="rgba(255,193,7,0.2)"
             stroke-width="3"
           />
           <circle
@@ -96,31 +102,33 @@
             cy="18"
             r="15"
             fill="none"
-            stroke="var(--color-ki-orange)"
+            stroke="var(--color-ki-yellow)"
             stroke-width="3"
             stroke-linecap="round"
             stroke-dasharray="94.25"
             stroke-dashoffset="94.25"
-            style="transition: stroke-dashoffset 0.3s linear;"
+            style="transition: stroke-dashoffset 0.3s linear; filter: drop-shadow(0 0 4px var(--color-ki-yellow));"
           />
         </svg>
         <div class="absolute inset-0 flex items-center justify-center">
-          <span id="hero-progress-time" class="font-mono text-[10px] font-bold tabular-nums">
+          <span id="hero-progress-time" class="font-display text-[10px] tabular-nums text-[var(--color-ki-yellow)]">
             0:00
           </span>
         </div>
       </div>
-      <span class="pr-1 text-[10px] font-semibold uppercase tracking-wider opacity-80">
-        restante
+      <span class="pr-1 font-display text-[9px] uppercase tracking-wider opacity-90">
+        Time Left
       </span>
     </div>
 
     <button
       type="button"
       id="hero-skip"
-      class="pointer-events-auto rounded-full border border-white/30 bg-black/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur transition hover:bg-[var(--color-ki-orange)]"
+      class="btn-arcade pointer-events-auto"
+      style="font-size: 0.7rem; padding: 0.45rem 0.9rem;"
     >
-      Omitir intro ⤵
+      <span aria-hidden="true">⤵</span>
+      <span>Skip Intro</span>
     </button>
   </div>
 </section>
@@ -214,8 +222,8 @@
       loader.innerHTML = `
         <div class="text-center px-6">
           <p class="text-4xl">⚠️</p>
-          <p class="mt-3 text-sm font-bold text-[var(--color-text)]">No se pudo cargar el video</p>
-          <button id="loader-skip" class="mt-4 rounded-full border border-[var(--color-ink)] bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold uppercase text-white">Continuar</button>
+          <p class="mt-3 font-display text-sm uppercase tracking-wider text-[var(--color-text)]">No se pudo cargar el video</p>
+          <button id="loader-skip" class="btn-arcade mt-4 text-xs">Continuar</button>
         </div>
       `;
       const fallbackSkip = document.getElementById("loader-skip");
@@ -258,7 +266,7 @@
       mute.addEventListener("click", () => {
         video.muted = !video.muted;
         muteIcon.textContent = video.muted ? "🔇" : "🔊";
-        muteLabel.textContent = video.muted ? "Sonido off" : "Sonido on";
+        muteLabel.textContent = video.muted ? "Sound Off" : "Sound On";
         mute.setAttribute(
           "aria-label",
           video.muted ? "Activar sonido" : "Silenciar video"

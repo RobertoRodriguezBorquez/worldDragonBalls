@@ -2,26 +2,64 @@
 interface Props {
   title?: string;
   subtitle?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 }
 const {
-  title = "Bienvenido al mundo Dragon Ball",
-  subtitle = "Explora a tus luchadores, descubre sus transformaciones y compara el poder de los Saiyans más fuertes.",
+  title = "WORLD DRAGON BALLS",
+  subtitle = "The Ultimate Fighters",
+  ctaHref = "/personajes",
+  ctaLabel = "Press Start",
 } = Astro.props;
 ---
 
-<section class="mx-auto max-w-7xl px-4 pt-10 pb-2 md:pt-14">
-  <div class="flex items-end justify-between gap-4">
-    <div>
-      <p class="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-accent)]">
-        <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]"></span>
-        Inicio
-      </p>
-      <h1 class="text-3xl font-extrabold leading-tight text-[var(--color-text)] md:text-5xl">
-        {title}
-      </h1>
-      <p class="mt-2 max-w-2xl text-sm text-[var(--color-text-muted)] md:text-base">
-        {subtitle}
-      </p>
+<section
+  id="title-screen"
+  class="relative mx-auto max-w-7xl px-4 pb-8 pt-12 md:pb-12 md:pt-20"
+>
+  <div class="ki-aura pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 md:h-96 md:w-96" aria-hidden="true"></div>
+
+  <div class="relative flex flex-col items-center text-center">
+    <div class="mb-4 flex items-center gap-2 text-[var(--color-ki-yellow)] md:mb-6 md:gap-3" aria-hidden="true">
+      <span class="text-2xl md:text-3xl">✦</span>
+      <span class="text-2xl md:text-3xl">✦</span>
+      <span class="text-2xl md:text-3xl">✦</span>
+      <span class="text-2xl md:text-3xl">✦</span>
+      <span class="text-2xl md:text-3xl">✦</span>
     </div>
+
+    <h1
+      class="font-display-shade text-5xl leading-[0.95] text-[var(--color-text)] md:text-8xl lg:text-9xl"
+      style="text-shadow: 4px 4px 0 var(--color-ki-orange);"
+    >
+      {title}
+    </h1>
+
+    <div class="my-4 flex w-full max-w-md items-center gap-3 md:my-6">
+      <span class="h-1 flex-1 bg-gradient-to-r from-transparent via-[var(--color-ki-orange)] to-[var(--color-ki-yellow)]"></span>
+      <span class="font-display text-xs uppercase tracking-[0.35em] text-[var(--color-ki-yellow)] md:text-sm">
+        {subtitle}
+      </span>
+      <span class="h-1 flex-1 bg-gradient-to-l from-transparent via-[var(--color-ki-orange)] to-[var(--color-ki-yellow)]"></span>
+    </div>
+
+    <p class="max-w-2xl text-sm text-[var(--color-text-muted)] md:text-base">
+      Selecciona tu luchador, explora las sagas y mide el poder de los Saiyans más fuertes del universo.
+    </p>
+
+    <div class="mt-6 flex flex-col items-center gap-3 md:mt-8 md:flex-row md:gap-4">
+      <a href={ctaHref} class="btn-arcade text-sm md:text-base" data-i18n="home.cta.start">
+        <span aria-hidden="true">▶</span>
+        {ctaLabel}
+      </a>
+      <a href="/comparador" class="btn-arcade btn-arcade-ghost text-sm md:text-base" data-i18n="home.cta.battle">
+        <span aria-hidden="true">⚔</span>
+        Versus Mode
+      </a>
+    </div>
+
+    <p class="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--color-text-muted)] md:mt-8 md:text-xs">
+      © 2026 World DB · All Fighters Ready · 16 Slots Loaded
+    </p>
   </div>
 </section>

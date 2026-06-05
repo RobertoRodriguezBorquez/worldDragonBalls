@@ -1,0 +1,114 @@
+---
+const sagas = [
+  {
+    id: "dragon-ball",
+    name: "Dragon Ball",
+    year: "1986",
+    icon: "🐉",
+    color: "from-orange-500 to-amber-500",
+    borderColor: "border-orange-500",
+    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-orange-500/10 group-hover:to-amber-500/10",
+    desc: "Original adventures with Goku, Bulma y Krillin.",
+    count: "20+ fighters",
+  },
+  {
+    id: "dragon-ball-z",
+    name: "Dragon Ball Z",
+    year: "1989",
+    icon: "⚡",
+    color: "from-blue-600 to-cyan-500",
+    borderColor: "border-blue-600",
+    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-blue-600/10 group-hover:to-cyan-500/10",
+    desc: "Saiyan saga, Frieza, Cell y Buu. La era dorada.",
+    count: "50+ fighters",
+    badge: "POPULAR",
+  },
+  {
+    id: "dragon-ball-super",
+    name: "Dragon Ball Super",
+    year: "2015",
+    icon: "✨",
+    color: "from-violet-600 to-fuchsia-500",
+    borderColor: "border-violet-600",
+    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-violet-600/10 group-hover:to-fuchsia-500/10",
+    desc: "Dios, Blue, Ultra Instinto. Los nuevos poderes.",
+    count: "30+ fighters",
+    badge: "NEW",
+  },
+  {
+    id: "dragon-ball-gt",
+    name: "Dragon Ball GT",
+    year: "1996",
+    icon: "🌌",
+    color: "from-rose-500 to-red-600",
+    borderColor: "border-rose-500",
+    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-rose-500/10 group-hover:to-red-600/10",
+    desc: "Más allá de Z. Super Saiyan 4 y las Dragon Balls oscuras.",
+    count: "20+ fighters",
+  },
+];
+---
+
+<section id="sagas" class="mx-auto max-w-7xl px-4 py-6 pb-12">
+  <div class="mb-5">
+    <div class="section-banner">
+      <span aria-hidden="true">🐉</span>
+      <span>Explore by Saga</span>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    {
+      sagas.map((s) => (
+        <a
+          href={`/personajes?saga=${s.id}`}
+          class={`group flex items-center gap-4 overflow-hidden rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-surface)] p-3 transition hover:-translate-y-0.5 hover:shadow-md md:gap-5 md:p-4 ${s.hoverBg}`}
+          style="box-shadow: 4px 4px 0 var(--color-ink);"
+          aria-label={`Ver personajes de ${s.name}`}
+        >
+          <div
+            class={`grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-gradient-to-br text-2xl text-white md:h-16 md:w-16 ${s.color}`}
+          >
+            <span aria-hidden="true">{s.icon}</span>
+          </div>
+
+          <div class={`hidden h-12 w-1 shrink-0 rounded-full md:block bg-gradient-to-b ${s.color}`}></div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-baseline gap-2">
+              <h3 class="font-display text-base uppercase tracking-wide text-[var(--color-text)] md:text-lg">
+                {s.name}
+              </h3>
+              <span class="font-mono text-[10px] font-bold text-[var(--color-text-muted)]">
+                [{s.year}]
+              </span>
+              {s.badge && (
+                <span
+                  class={`rounded bg-gradient-to-r ${s.color} px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white`}
+                >
+                  {s.badge}
+                </span>
+              )}
+            </div>
+            <p class="mt-0.5 line-clamp-1 text-xs text-[var(--color-text-muted)] md:text-sm">
+              {s.desc}
+            </p>
+            <p class="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-ki-orange)]">
+              {s.count}
+            </p>
+          </div>
+
+          <div
+            class="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-[var(--color-ink)] bg-[var(--color-ki-yellow)] text-[var(--color-ink)] transition group-hover:translate-x-1"
+            style="box-shadow: 2px 2px 0 var(--color-ink);"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="h-5 w-5">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>

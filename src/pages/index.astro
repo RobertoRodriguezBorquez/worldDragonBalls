@@ -2,12 +2,20 @@
 import Layout from "@layouts/Layout.astro";
 import PresentacionVideo from "@components/PresentacionVideo.astro";
 import Bienvenida from "@components/Bienvenida.astro";
-import CharacterCarousel from "@components/personajes/CharacterCarousel.astro";
-import Categorias from "@components/Categorias.astro";
-import SagasTimeline from "@components/timeline/SagasTimeline.astro";
-import { getFeaturedCharacters } from "@lib/api";
+import CharacterSelect from "@components/personajes/CharacterSelect.astro";
+import VersusMode from "@components/VersusMode.astro";
+import Sagas from "@components/Sagas.astro";
+import { getFeaturedCharacters, parseKi } from "@lib/api";
 
-const featured = (await getFeaturedCharacters()).slice(0, 12);
+const featured = (await getFeaturedCharacters()).slice(0, 16);
+
+const sortedByKi = [...featured].sort((a, b) => {
+  const ka = parseKi(a.maxKi) || parseKi(a.ki);
+  const kb = parseKi(b.maxKi) || parseKi(b.ki);
+  return kb - ka;
+});
+const top1 = sortedByKi[0] ?? featured[0];
+const top2 = sortedByKi[1] ?? featured[1] ?? featured[0];
 ---
 
 <Layout
@@ -25,23 +33,12 @@ const featured = (await getFeaturedCharacters()).slice(0, 12);
   >
     <Bienvenida />
 
-    <section id="destacados" class="mx-auto max-w-7xl px-4 py-6">
-      <div class="mb-4 flex items-baseline justify-between">
-        <h2 class="text-lg font-bold text-[var(--color-text)] md:text-xl">
-          Personajes destacados
-        </h2>
-        <a
-          href="/personajes"
-          class="text-sm font-semibold text-[var(--color-accent)] hover:underline"
-        >
-          Ver todos →
-        </a>
-      </div>
-      <CharacterCarousel characters={featured} />
+    <section id="destacados" class="mx-auto max-w-7xl px-4">
+      <CharacterSelect characters={featured} />
     </section>
 
-    <Categorias />
+    <VersusMode fighterA={top1} fighterB={top2} />
 
-    <SagasTimeline />
+    <Sagas />
   </div>
 </Layout>
