@@ -1,47 +1,52 @@
-/* Theme tokens - Dragon Ball Ki palette */
+/* World Dragon Balls — Theme tokens (simple) */
+
 :root,
 [data-theme="light"] {
-  --color-bg: #f0f8ea;
-  --color-bg-elevated: #ffffff;
-  --color-bg-muted: #fef3c7;
+  --color-bg: #f5efe1;
+  --color-bg-elevated: #fffbf2;
+  --color-bg-muted: #efe6cf;
   --color-surface: #ffffff;
-  --color-border: #fde68a;
-  --color-text: #1f2937;
-  --color-text-muted: #6b7280;
-  --color-ki-orange: #ff6b35;
-  --color-ki-orange-hover: #ff8552;
-  --color-ki-blue: #4a90e2;
-  --color-ki-blue-hover: #6bb6ff;
-  --color-ki-yellow: #ffd700;
-  --color-ki-yellow-soft: #fef3c7;
-  --color-ki-red: #ef4444;
-  --color-ki-purple: #8b5cf6;
+  --color-ink: #1a1208;
+  --color-text: #1a1208;
+  --color-text-muted: #5a4a36;
+  --color-border: #d9c89a;
+
+  --color-ki-orange: #ff5722;
+  --color-ki-orange-hover: #ff7a4a;
+  --color-ki-blue: #1e6fd9;
+  --color-ki-blue-hover: #4590ff;
+  --color-ki-yellow: #ffc107;
+  --color-ki-yellow-soft: #fff3cd;
+  --color-ki-red: #e53935;
+  --color-ki-purple: #6a1b9a;
+
   --color-accent: var(--color-ki-orange);
   --color-accent-hover: var(--color-ki-orange-hover);
-  --color-shadow: 0 10px 30px -10px rgba(255, 107, 53, 0.25);
-  --color-overlay: rgba(255, 255, 255, 0.6);
+  --color-overlay: rgba(255, 251, 242, 0.85);
   color-scheme: light;
 }
 
 [data-theme="dark"] {
   --color-bg: #0a0a0a;
-  --color-bg-elevated: #1a1a1a;
-  --color-bg-muted: #2a2a2a;
-  --color-surface: #1a1a1a;
+  --color-bg-elevated: #141414;
+  --color-bg-muted: #1f1f1f;
+  --color-surface: #161616;
+  --color-ink: #f5efe1;
+  --color-text: #f5efe1;
+  --color-text-muted: #a89a7e;
   --color-border: #2a2a2a;
-  --color-text: #f5f5f5;
-  --color-text-muted: #a3a3a3;
-  --color-ki-orange: #ff8552;
-  --color-ki-orange-hover: #ffa078;
-  --color-ki-blue: #6bb6ff;
-  --color-ki-blue-hover: #93c9ff;
-  --color-ki-yellow: #ffe45c;
-  --color-ki-yellow-soft: #3a2f00;
-  --color-ki-red: #f87171;
-  --color-ki-purple: #a78bfa;
+
+  --color-ki-orange: #ff6b3d;
+  --color-ki-orange-hover: #ff8a5e;
+  --color-ki-blue: #4a9eff;
+  --color-ki-blue-hover: #6db1ff;
+  --color-ki-yellow: #ffd54a;
+  --color-ki-yellow-soft: #2a2009;
+  --color-ki-red: #ff5252;
+  --color-ki-purple: #b388ff;
+
   --color-accent: var(--color-ki-orange);
   --color-accent-hover: var(--color-ki-orange-hover);
-  --color-shadow: 0 10px 30px -10px rgba(255, 133, 82, 0.4);
   --color-overlay: rgba(0, 0, 0, 0.6);
   color-scheme: dark;
 }

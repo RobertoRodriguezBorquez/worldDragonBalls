@@ -1,0 +1,27 @@
+---
+interface Props {
+  title?: string;
+  subtitle?: string;
+}
+const {
+  title = "Bienvenido al mundo Dragon Ball",
+  subtitle = "Explora a tus luchadores, descubre sus transformaciones y compara el poder de los Saiyans más fuertes.",
+} = Astro.props;
+---
+
+<section class="mx-auto max-w-7xl px-4 pt-10 pb-2 md:pt-14">
+  <div class="flex items-end justify-between gap-4">
+    <div>
+      <p class="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-accent)]">
+        <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]"></span>
+        Inicio
+      </p>
+      <h1 class="text-3xl font-extrabold leading-tight text-[var(--color-text)] md:text-5xl">
+        {title}
+      </h1>
+      <p class="mt-2 max-w-2xl text-sm text-[var(--color-text-muted)] md:text-base">
+        {subtitle}
+      </p>
+    </div>
+  </div>
+</section>

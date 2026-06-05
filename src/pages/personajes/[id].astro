@@ -2,10 +2,12 @@
 import Layout from "@layouts/Layout.astro";
 import FavoriteButton from "@components/personajes/FavoriteButton.astro";
 import PowerBar from "@components/personajes/PowerBar.astro";
-import { getFeaturedCharacters, parseKi } from "@lib/api";
+import { FEATURED_IDS, getCharacterById, parseKi, isUnknownKi } from "@lib/api";
 
 export async function getStaticPaths() {
-  const characters = await getFeaturedCharacters();
+  const characters = await Promise.all(
+    FEATURED_IDS.map((id) => getCharacterById(id))
+  );
   return characters.map((c) => ({
     params: { id: String(c.id) },
     props: { character: c },
@@ -15,6 +17,10 @@ export async function getStaticPaths() {
 const { character } = Astro.props;
 const ki = parseKi(character.ki);
 const maxKi = parseKi(character.maxKi);
+const kiUnknown = isUnknownKi(character.ki);
+const maxKiUnknown = isUnknownKi(character.maxKi);
+const hasKiData = !kiUnknown || !maxKiUnknown;
+const powerMax = Math.max(ki, maxKi, 1);
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -22,7 +28,6 @@ const jsonLd = {
   name: character.name,
   description: character.description,
   image: character.image,
-  affiliation: character.affiliation,
   gender: character.gender,
 };
 ---
@@ -75,15 +80,28 @@ const jsonLd = {
           <h2 class="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
             Nivel de poder
           </h2>
-          <PowerBar label="Ki actual" value={ki} max={Math.max(maxKi, ki, 1)} color="orange" />
-          <div class="mt-3" />
-          <PowerBar label="Ki máximo" value={maxKi} max={Math.max(maxKi, ki, 1)} color="blue" />
+          {hasKiData ? (
+            <>
+              <PowerBar label="Ki actual" value={ki} max={powerMax} color="orange" unknown={kiUnknown} />
+              <div class="mt-3" />
+              <PowerBar label="Ki máximo" value={maxKi} max={powerMax} color="blue" unknown={maxKiUnknown} />
+            </>
+          ) : (
+            <p class="text-sm text-[var(--color-text-muted)]">
+              Nivel de Ki no registrado para este personaje.
+            </p>
+          )}
         </div>
 
         <dl class="grid grid-cols-2 gap-2 text-sm">
           <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
             <dt class="text-xs text-[var(--color-text-muted)]">Planeta de origen</dt>
-            <dd class="font-semibold text-[var(--color-text)]">{character.originPlanet}</dd>
+            <dd class="font-semibold text-[var(--color-text)]">
+              {character.originPlanet?.name ?? "Desconocido"}
+              {character.originPlanet?.isDestroyed && (
+                <span class="ml-1 text-[10px] font-normal text-[var(--color-text-muted)]">(destruido)</span>
+              )}
+            </dd>
           </div>
           <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
             <dt class="text-xs text-[var(--color-text-muted)]">Afiliación</dt>

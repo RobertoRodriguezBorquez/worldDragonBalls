@@ -1,39 +1,276 @@
 ---
 import ThemeToggle from "./ui/ThemeToggle.astro";
 import LanguageSwitcher from "./ui/LanguageSwitcher.astro";
+import { getLocaleFromUrl, getDictionary } from "@lib/i18n";
+
+const pathname = Astro.url.pathname;
+const locale = getLocaleFromUrl(Astro.url);
+const dict = getDictionary(locale);
+
+const isHome =
+  pathname === "/" ||
+  pathname === "/en" ||
+  pathname === "/en/";
+
+const navItems = [
+  {
+    href: "/personajes",
+    label: dict.nav.characters,
+    i18n: "nav.characters",
+    match: (p: string) => p.startsWith("/personajes"),
+    color: "ki-orange",
+    icon: "characters",
+  },
+  {
+    href: "/favoritos",
+    label: dict.nav.favorites,
+    i18n: "nav.favorites",
+    match: (p: string) => p.startsWith("/favoritos"),
+    color: "ki-yellow",
+    icon: "star",
+  },
+  {
+    href: "/comparador",
+    label: dict.nav.compare,
+    i18n: "nav.compare",
+    match: (p: string) => p.startsWith("/comparador"),
+    color: "ki-blue",
+    icon: "bolt",
+  },
+] as const;
 ---
 
-<header class="sticky top-0 z-40 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]/90 px-4 py-2 backdrop-blur">
-  <a href="/" class="flex items-center gap-2" aria-label="Inicio">
-    <img src="/logo/logo-header.webp" alt="Logo World Dragon Balls" class="h-12 w-auto" />
-  </a>
+<header
+  id="site-header"
+  class="group/header sticky top-0 z-[60] border-b-[3px] border-[var(--color-ink)] bg-[var(--color-bg-elevated)]/95 backdrop-blur-sm"
+>
+  <div
+    aria-hidden="true"
+    class="h-1 w-full bg-[repeating-linear-gradient(45deg,var(--color-ki-orange)_0_10px,var(--color-ki-yellow)_10px_20px,var(--color-ki-red)_20px_30px)]"
+  ></div>
 
-  <nav class="hidden items-center gap-2 md:flex" aria-label="Principal">
-    <a
-      href="/personajes"
-      data-i18n="nav.characters"
-      class="rounded-full px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-bg-muted)]"
-    >
-      Personajes
-    </a>
-    <a
-      href="/favoritos"
-      data-i18n="nav.favorites"
-      class="rounded-full px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-bg-muted)]"
-    >
-      Favoritos
-    </a>
-    <a
-      href="/comparador"
-      data-i18n="nav.compare"
-      class="rounded-full px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-bg-muted)]"
-    >
-      Comparador
-    </a>
-  </nav>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-multiply"
+    style="background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>&quot;);"
+  ></div>
 
-  <div class="flex items-center gap-2">
-    <LanguageSwitcher />
-    <ThemeToggle />
+  <div
+    class="relative mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 transition-[padding] duration-200 sm:px-4 sm:py-2.5 group-data-[scrolled=true]/header:py-1.5"
+  >
+    <a
+      href="/"
+      aria-label={dict.nav.home}
+      data-i18n-aria="nav.home"
+      aria-current={isHome ? "page" : undefined}
+      class:list={[
+        "relative inline-flex items-center gap-2 rounded-full border-[3px] border-[var(--color-ink)] bg-[var(--color-surface)] pl-1 pr-3 py-1 transition-all duration-150",
+        "hover:-translate-y-0.5 hover:bg-[var(--color-ki-yellow)]",
+        "active:translate-x-[2px] active:translate-y-[2px]",
+        isHome ? "shadow-none" : "shadow-[3px_3px_0_var(--color-ink)] hover:shadow-[4px_4px_0_var(--color-ink)]",
+      ]}
+    >
+      <span
+        class="grid h-8 w-8 place-items-center rounded-full border-[2.5px] border-[var(--color-ink)] bg-[var(--color-ki-orange)] transition-transform duration-300 group-hover:rotate-[20deg]"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 32 32" class="h-7 w-7">
+          <defs>
+            <radialGradient id="db-shine" cx="0.35" cy="0.3" r="0.7">
+              <stop offset="0%" stop-color="#fff3cd" stop-opacity="0.85" />
+              <stop offset="60%" stop-color="var(--color-ki-orange, #ff5722)" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="16" cy="16" r="13" fill="url(#db-shine)" />
+          <circle cx="16" cy="16" r="13" fill="none" stroke="var(--color-ki-red, #e53935)" stroke-width="1.4" />
+          <g fill="var(--color-ki-red, #e53935)">
+            <polygon points="16,7 17.2,9.5 20,9.7 17.9,11.5 18.6,14.1 16,12.7 13.4,14.1 14.1,11.5 12,9.7 14.8,9.5" />
+            <polygon points="9,19 9.7,20.5 11.3,20.6 10.1,21.6 10.5,23.1 9,22.3 7.5,23.1 7.9,21.6 6.7,20.6 8.3,20.5" />
+            <polygon points="23,19 23.7,20.5 25.3,20.6 24.1,21.6 24.5,23.1 23,22.3 21.5,23.1 21.9,21.6 20.7,20.6 22.3,20.5" />
+            <polygon points="16,22 16.7,23.5 18.3,23.6 17.1,24.6 17.5,26.1 16,25.3 14.5,26.1 14.9,24.6 13.7,23.6 15.3,23.5" />
+          </g>
+        </svg>
+      </span>
+      <span class="leading-none">
+        <span
+          class="block font-[var(--font-display)] text-[15px] uppercase leading-none tracking-[0.02em] text-[var(--color-text)]"
+        >
+          World <span class="text-[var(--color-ki-red)]">DB</span>
+        </span>
+      </span>
+    </a>
+
+    <nav class="hidden items-center gap-1.5 md:flex" aria-label="Principal">
+      {
+        navItems.map((item) => {
+          const active = item.match(pathname);
+          return (
+            <a
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              data-i18n={item.i18n}
+              class:list={[
+                "group/nav relative inline-flex items-center gap-2 rounded-full border-[2.5px] border-[var(--color-ink)] px-3.5 py-1.5 text-sm font-semibold transition-all duration-150",
+                "active:translate-x-[2px] active:translate-y-[2px]",
+                active
+                  ? `bg-[var(--color-${item.color})] text-[var(--color-ink)] shadow-none -rotate-1`
+                  : `bg-[var(--color-surface)] text-[var(--color-text)] shadow-[2px_2px_0_var(--color-ink)] hover:-translate-y-0.5 hover:shadow-[3px_3px_0_var(--color-ink)] hover:bg-[var(--color-bg-muted)]`,
+              ]}
+            >
+              {item.icon === "characters" && (
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V5Z" />
+                  <path d="M8 7h7M8 11h7" />
+                </svg>
+              )}
+              {item.icon === "star" && (
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill={active ? "currentColor" : "none"} stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="12,3 14.6,9.1 21,9.6 16,13.9 17.6,20.2 12,16.8 6.4,20.2 8,13.9 3,9.6 9.4,9.1" />
+                </svg>
+              )}
+              {item.icon === "bolt" && (
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill={active ? "currentColor" : "none"} stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="13,2 4,14 11,14 9,22 20,9 13,9" />
+                </svg>
+              )}
+              <span>{item.label}</span>
+            </a>
+          );
+        })
+      }
+    </nav>
+
+    <div class="flex items-center gap-1.5">
+      <LanguageSwitcher />
+      <ThemeToggle />
+      <button
+        type="button"
+        id="menu-toggle"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full border-[2.5px] border-[var(--color-ink)] bg-[var(--color-surface)] text-[var(--color-text)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-[var(--color-ki-yellow)] active:translate-x-[2px] active:translate-y-[2px] md:hidden"
+        style="box-shadow: 2px 2px 0 var(--color-ink);"
+        aria-label="Abrir menú"
+        data-i18n-aria="common.menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <span class="relative block h-4 w-4">
+          <span class="menu-line menu-line-top absolute left-0 top-0 block h-[2.5px] w-4 rounded-full bg-current transition-transform duration-300 ease-out"></span>
+          <span class="menu-line menu-line-mid absolute left-0 top-[7px] block h-[2.5px] w-4 rounded-full bg-current transition-opacity duration-200"></span>
+          <span class="menu-line menu-line-bot absolute left-0 top-[14px] block h-[2.5px] w-4 rounded-full bg-current transition-transform duration-300 ease-out"></span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="mobile-menu"
+    class="hidden overflow-hidden border-t-[3px] border-[var(--color-ink)] bg-[var(--color-bg-elevated)] md:hidden"
+  >
+    <nav class="flex flex-col gap-1.5 px-3 py-3" aria-label="Móvil">
+      {
+        navItems.map((item) => {
+          const active = item.match(pathname);
+          return (
+            <a
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              data-i18n={item.i18n}
+              data-menu-item
+              class:list={[
+                "flex items-center gap-3 rounded-2xl border-[2.5px] border-[var(--color-ink)] px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 translate-y-2 opacity-0",
+                active
+                  ? `bg-[var(--color-${item.color})] text-[var(--color-ink)]`
+                  : `bg-[var(--color-surface)] text-[var(--color-text)] shadow-[2px_2px_0_var(--color-ink)]`,
+              ]}
+            >
+              <span class="grid h-7 w-7 place-items-center rounded-full border-[2px] border-[var(--color-ink)] bg-[var(--color-bg-muted)]">
+                {item.icon === "characters" && (
+                  <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V5Z" />
+                    <path d="M8 7h7M8 11h7" />
+                  </svg>
+                )}
+                {item.icon === "star" && (
+                  <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill={active ? "currentColor" : "none"} stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polygon points="12,3 14.6,9.1 21,9.6 16,13.9 17.6,20.2 12,16.8 6.4,20.2 8,13.9 3,9.6 9.4,9.1" />
+                  </svg>
+                )}
+                {item.icon === "bolt" && (
+                  <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill={active ? "currentColor" : "none"} stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polygon points="13,2 4,14 11,14 9,22 20,9 13,9" />
+                  </svg>
+                )}
+              </span>
+              <span>{item.label}</span>
+              {active && <span class="ml-auto text-xs uppercase tracking-wider opacity-70">•</span>}
+            </a>
+          );
+        })
+      }
+    </nav>
   </div>
 </header>
+
+<script is:inline>
+  (() => {
+    const header = document.getElementById("site-header");
+    const btn = document.getElementById("menu-toggle");
+    const menu = document.getElementById("mobile-menu");
+    if (!header || !btn || !menu) return;
+
+    const top = btn.querySelector(".menu-line-top");
+    const mid = btn.querySelector(".menu-line-mid");
+    const bot = btn.querySelector(".menu-line-bot");
+
+    const setOpen = (open) => {
+      if (top && mid && bot) {
+        top.style.transform = open ? "translateY(7px) rotate(45deg)" : "";
+        bot.style.transform = open ? "translateY(-7px) rotate(-45deg)" : "";
+        mid.style.opacity = open ? "0" : "1";
+        mid.style.transform = open ? "scaleX(0)" : "scaleX(1)";
+      }
+    };
+
+    const closeMenu = () => {
+      menu.classList.add("hidden");
+      setOpen(false);
+      btn.setAttribute("aria-expanded", "false");
+      btn.setAttribute("aria-label", "Abrir menú");
+      document.body.style.overflow = "";
+    };
+
+    const openMenu = () => {
+      menu.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        menu.querySelectorAll("[data-menu-item]").forEach((el, i) => {
+          el.style.transitionDelay = `${i * 60}ms`;
+          el.classList.remove("translate-y-2", "opacity-0");
+          el.classList.add("translate-y-0", "opacity-100");
+        });
+      });
+      btn.setAttribute("aria-expanded", "true");
+      btn.setAttribute("aria-label", "Cerrar menú");
+      document.body.style.overflow = "hidden";
+    };
+
+    btn.addEventListener("click", () => {
+      const isOpen = !menu.classList.contains("hidden");
+      if (isOpen) closeMenu();
+      else openMenu();
+    });
+
+    menu.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", closeMenu);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !menu.classList.contains("hidden")) closeMenu();
+    });
+
+    const onScroll = () => {
+      header.dataset.scrolled = window.scrollY > 8 ? "true" : "false";
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  })();
+</script>

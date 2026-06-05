@@ -17,8 +17,17 @@ export interface Character {
   deletedAt: string | null;
 }
 
-export interface CharacterFull extends Character {
-  originPlanet: string;
+export interface Planet {
+  id: number;
+  name: string;
+  isDestroyed: boolean;
+  description?: string;
+  image?: string;
+  deletedAt?: string | null;
+}
+
+export interface CharacterFull extends Omit<Character, "originPlanet"> {
+  originPlanet: Planet | null;
   transformations: Transformation[];
 }
 
@@ -58,6 +67,88 @@ export const SAGAS = [
   { id: "dragon-ball-gt", name: "Dragon Ball GT" },
 ] as const;
 
+/**
+ * Arcos narrativos curados. La API no expone "saga" así que mapeamos
+ * por ID/affiliation/raza. Un personaje puede aparecer en varios arcos.
+ */
+export const STORY_ARCS = [
+  { id: "all", name: "Todos", color: "var(--color-ki-yellow)" },
+  { id: "original", name: "Dragon Ball", color: "var(--color-ki-yellow)" },
+  { id: "saiyan", name: "Saiyan", color: "#ff6b3d" },
+  { id: "frieza", name: "Namek / Frieza", color: "#a855f7" },
+  { id: "cell", name: "Cell", color: "#10b981" },
+  { id: "buu", name: "Buu", color: "#ec4899" },
+  { id: "god", name: "Dios / Beerus", color: "#6366f1" },
+  { id: "tournament", name: "Torneo", color: "#0ea5e9" },
+  { id: "other", name: "Otros", color: "#a89a7e" },
+] as const;
+
+export type SagaId = (typeof STORY_ARCS)[number]["id"];
+
+/**
+ * Mapeo de personaje → arcos. Se calcula por heurística (affiliation + id).
+ */
+const SAGA_BY_AFFILIATION: Record<string, SagaId[]> = {
+  "Z Fighter": ["original", "saiyan", "frieza", "cell", "buu"],
+  "Army of Frieza": ["saiyan", "frieza"],
+  Villain: ["cell", "buu"],
+  "Pride Troopers": ["tournament"],
+  "Assistant of Beerus": ["god"],
+  "Assistant of Vermoud": ["tournament"],
+  Freelancer: ["cell"],
+  Other: ["other"],
+};
+
+const SAGA_OVERRIDES: Record<number, SagaId[]> = {
+  4: ["original"],
+  11: ["original", "frieza", "cell", "buu"],
+  12: ["original", "frieza", "cell", "buu"],
+  13: ["original", "frieza"],
+  14: ["original"],
+  17: ["original", "tournament"],
+  19: ["original"],
+  20: ["buu", "tournament", "other"],
+  30: ["saiyan"],
+  33: ["god", "tournament"],
+  34: ["god", "tournament"],
+  35: ["tournament", "other"],
+  37: ["buu", "god"],
+  38: ["tournament"],
+  39: ["tournament"],
+  40: ["tournament"],
+  42: ["tournament"],
+  43: ["tournament"],
+  44: ["tournament"],
+  63: ["other", "tournament"],
+  64: ["cell", "buu"],
+  65: ["buu", "tournament"],
+  66: ["buu", "tournament"],
+  67: ["buu"],
+  68: ["saiyan", "buu", "tournament"],
+  69: ["other", "tournament"],
+  70: ["other", "tournament"],
+  71: ["other", "tournament"],
+  72: ["other", "tournament"],
+  73: ["buu", "tournament"],
+  74: ["buu", "tournament"],
+  75: ["buu", "tournament"],
+  76: ["buu", "tournament"],
+  77: ["buu", "tournament"],
+  78: ["buu", "tournament"],
+};
+
+export function getCharacterSagas(character: Pick<Character, "id" | "affiliation">): SagaId[] {
+  const override = SAGA_OVERRIDES[character.id];
+  if (override) return override;
+  const fromAff = SAGA_BY_AFFILIATION[character.affiliation] ?? ["other"];
+  return fromAff;
+}
+
+export function characterInSaga(character: Pick<Character, "id" | "affiliation">, saga: SagaId): boolean {
+  if (saga === "all") return true;
+  return getCharacterSagas(character).includes(saga);
+}
+
 async function safeFetch<T>(url: string, fallback: T): Promise<T> {
   try {
     const res = await fetch(url, {
@@ -70,6 +161,21 @@ async function safeFetch<T>(url: string, fallback: T): Promise<T> {
     return fallback;
   }
 }
+
+export const KI_MULTIPLIERS: Record<string, number> = {
+  thousand: 1e3,
+  million: 1e6,
+  billion: 1e9,
+  trillion: 1e12,
+  quadrillion: 1e15,
+  quintillion: 1e18,
+  sextillion: 1e21,
+  septillion: 1e24,
+  septllion: 1e24,
+  octillion: 1e27,
+  nonillion: 1e30,
+  decillion: 1e33,
+};
 
 const FALLBACK_CHARACTERS: CharacterFull[] = [
   {
@@ -84,7 +190,7 @@ const FALLBACK_CHARACTERS: CharacterFull[] = [
     image: "https://dragonball-api.com/characters/goku_normal.webp",
     affiliation: "Z Fighter",
     deletedAt: null,
-    originPlanet: "Planet Vegeta",
+    originPlanet: { id: 3, name: "Vegeta", isDestroyed: true, description: "Planeta natal de los Saiyans.", deletedAt: null },
     transformations: [],
   },
   {
@@ -99,7 +205,7 @@ const FALLBACK_CHARACTERS: CharacterFull[] = [
     image: "https://dragonball-api.com/characters/vegeta_normal.webp",
     affiliation: "Z Fighter",
     deletedAt: null,
-    originPlanet: "Planet Vegeta",
+    originPlanet: { id: 3, name: "Vegeta", isDestroyed: true, description: "Planeta natal de los Saiyans.", deletedAt: null },
     transformations: [],
   },
   {
@@ -114,7 +220,7 @@ const FALLBACK_CHARACTERS: CharacterFull[] = [
     image: "https://dragonball-api.com/characters/frieza_normal.webp",
     affiliation: "Army of Frieza",
     deletedAt: null,
-    originPlanet: "Unknown",
+    originPlanet: null,
     transformations: [],
   },
 ];
@@ -146,13 +252,33 @@ export async function getCharacterById(id: number): Promise<CharacterFull> {
 }
 
 /**
- * Convierte un ki string ("60.000.000" / "90 Septillion" / "unknown") a número (0 si no parsea)
+ * Convierte un ki string ("60.000.000" / "90 Septillion" / "1.5 Billion" / "unknown") a número.
+ * Devuelve 0 si no se puede parsear o si el valor es "unknown".
  */
 export function parseKi(ki: string): number {
   if (!ki) return 0;
+  const raw = String(ki).toLowerCase().trim();
+  if (raw === "unknown" || raw === "?" || raw === "") return 0;
+
+  const [numPart, ...rest] = raw.split(/\s+/);
+  const cleanedNum = (numPart || "").replace(/\./g, "").replace(/,/g, "");
+  const base = Number.parseFloat(cleanedNum);
+  if (!Number.isFinite(base)) return 0;
+
+  const suffix = rest.join(" ").replace(/[^a-z]/g, "");
+  const multiplier = suffix ? KI_MULTIPLIERS[suffix] : 1;
+  if (multiplier === undefined) {
+    const n = Number.parseInt(cleanedNum, 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return base * multiplier;
+}
+
+/**
+ * Indica si un ki es desconocido / vacío
+ */
+export function isUnknownKi(ki: string | null | undefined): boolean {
+  if (!ki) return true;
   const s = String(ki).toLowerCase().trim();
-  if (s === "unknown" || s === "?" || s === "") return 0;
-  const cleaned = s.replace(/\./g, "").replace(/,/g, "");
-  const n = Number.parseInt(cleaned, 10);
-  return Number.isFinite(n) ? n : 0;
+  return s === "" || s === "unknown" || s === "?";
 }

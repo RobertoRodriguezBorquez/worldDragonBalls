@@ -9,14 +9,14 @@ const { id, name, compact = false } = Astro.props;
 
 <button
   type="button"
-  class={`fav-btn inline-flex items-center gap-1 rounded-full text-lg transition active:scale-95 ${compact ? "h-7 w-7 justify-center" : "px-3 py-1.5 bg-[var(--color-accent)] text-white font-semibold hover:bg-[var(--color-accent-hover)]"}`}
+  class={`fav-btn group/fav inline-flex items-center gap-1 rounded-full text-lg transition active:scale-95 ${compact ? "h-8 w-8 justify-center border-2 border-[var(--color-ink)] bg-[var(--color-bg-elevated)] hover:bg-[var(--color-ki-yellow)]" : "border-2 border-[var(--color-ink)] bg-[var(--color-accent)] px-3 py-1.5 text-white font-display text-xs uppercase hover:bg-[var(--color-ki-yellow)] hover:text-[var(--color-ink)]"}`}
   data-character-id={id}
   data-character-name={name}
   aria-pressed="false"
   aria-label="Agregar a favoritos"
 >
-  <span class="fav-icon">☆</span>
-  {!compact && <span class="text-sm fav-label">Favorito</span>}
+  <span class={`fav-icon transition ${compact ? "text-[var(--color-ink)]" : "text-white group-hover/fav:text-[var(--color-ink)]"}`}>☆</span>
+  {!compact && <span class="fav-label">Favorito</span>}
 </button>
 
 <script is:inline>

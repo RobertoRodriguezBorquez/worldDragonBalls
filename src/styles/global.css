@@ -2,10 +2,10 @@
 @import "./theme.css";
 @import "@fontsource-variable/onest";
 
-/* Tailwind 4 dark mode variant driven by [data-theme="dark"] */
+/* Tailwind 4 dark mode variant */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Token maps for Tailwind utilities */
+/* Tailwind theme tokens */
 @theme {
   --color-ki-orange: var(--color-ki-orange);
   --color-ki-blue: var(--color-ki-blue);
@@ -21,54 +21,63 @@
   --color-border-base: var(--color-border);
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
-  --font-sans: "Onest Variable", system-ui, sans-serif;
+  --color-ink: var(--color-ink);
+    --font-sans: "Onest Variable", system-ui, sans-serif;
+    --font-display: "Bungee", system-ui, sans-serif;
+    --font-display-shade: "Bungee Shade", system-ui, sans-serif;
 }
 
-/* Scroll-snap helpers for timeline */
-.scroll-snap-x {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.scroll-snap-x > * {
-  scroll-snap-align: start;
-}
-
-/* View-timeline entrance for cards */
+/* ================== MOTION (mínimo y útil) ================== */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
 .animate-fade-up {
-  animation: fade-up 0.6s ease both;
+  animation: fade-up 0.4s ease-out both;
 }
 
-/* Ki pulse glow */
-@keyframes ki-pulse {
+@keyframes ki-flicker {
   0%,
   100% {
     box-shadow: 0 0 0 0 var(--color-ki-yellow);
   }
   50% {
-    box-shadow: 0 0 24px 8px var(--color-ki-yellow);
+    box-shadow: 0 0 24px 6px var(--color-ki-yellow);
   }
 }
-
-.ki-pulse {
-  animation: ki-pulse 2.4s ease-in-out infinite;
+.animate-ki {
+  animation: ki-flicker 2.6s ease-in-out infinite;
 }
 
-/* Hide scrollbar but keep scroll */
+/* ================== SCROLL-SNAP TIMELINE ================== */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-snap-x::-webkit-scrollbar {
+  display: none;
+}
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+
+/* ================== UTIL ================== */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+/* ================== INTRO MODE (home video) ================== */
+body.intro-mode #site-header {
+  display: none;
 }

@@ -60,6 +60,7 @@
   "common": {
     "back": "Volver",
     "toggleTheme": "Cambiar tema",
-    "language": "Idioma"
+    "language": "Idioma",
+    "menu": "Menú"
   }
 }

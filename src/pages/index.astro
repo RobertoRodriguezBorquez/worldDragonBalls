@@ -1,40 +1,47 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import Categorias from "@components/Categorias.astro";
 import PresentacionVideo from "@components/PresentacionVideo.astro";
+import Bienvenida from "@components/Bienvenida.astro";
+import CharacterCarousel from "@components/personajes/CharacterCarousel.astro";
+import Categorias from "@components/Categorias.astro";
 import SagasTimeline from "@components/timeline/SagasTimeline.astro";
-import CharacterGrid from "@components/personajes/CharacterGrid.astro";
 import { getFeaturedCharacters } from "@lib/api";
 
-const featured = (await getFeaturedCharacters()).slice(0, 8);
+const featured = (await getFeaturedCharacters()).slice(0, 12);
 ---
 
 <Layout
   title="World Dragon Balls | Inicio"
   description="Explora personajes, sagas y transformaciones del universo Dragon Ball."
+  bodyClass="overflow-hidden intro-mode"
 >
   <PresentacionVideo />
-  <Categorias />
 
-  <section class="mx-auto mt-8 max-w-7xl px-4">
-    <header class="mb-4 flex items-end justify-between">
-      <div>
-        <h2 class="text-2xl font-extrabold text-[var(--color-text)] md:text-3xl">
+  <div
+    id="below-video"
+    class="pointer-events-none opacity-0 transition-opacity duration-700"
+    aria-hidden="true"
+    inert
+  >
+    <Bienvenida />
+
+    <section id="destacados" class="mx-auto max-w-7xl px-4 py-6">
+      <div class="mb-4 flex items-baseline justify-between">
+        <h2 class="text-lg font-bold text-[var(--color-text)] md:text-xl">
           Personajes destacados
         </h2>
-        <p class="text-sm text-[var(--color-text-muted)]">
-          Los Saiyans y villanos más icónicos.
-        </p>
+        <a
+          href="/personajes"
+          class="text-sm font-semibold text-[var(--color-accent)] hover:underline"
+        >
+          Ver todos →
+        </a>
       </div>
-      <a
-        href="/personajes"
-        class="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
-      >
-        Ver todos
-      </a>
-    </header>
-    <CharacterGrid characters={featured} />
-  </section>
+      <CharacterCarousel characters={featured} />
+    </section>
 
-  <SagasTimeline />
+    <Categorias />
+
+    <SagasTimeline />
+  </div>
 </Layout>

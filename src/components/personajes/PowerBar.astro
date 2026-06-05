@@ -4,9 +4,10 @@ interface Props {
   value: number;
   max: number;
   color?: "orange" | "blue" | "yellow" | "red" | "purple";
+  unknown?: boolean;
 }
-const { label, value, max, color = "orange" } = Astro.props;
-const pct = max > 0 ? Math.min(100, Math.max(2, (value / max) * 100)) : 0;
+const { label, value, max, color = "orange", unknown = false } = Astro.props;
+const pct = !unknown && max > 0 ? Math.min(100, Math.max(2, (value / max) * 100)) : 0;
 
 const colorMap: Record<string, string> = {
   orange: "var(--color-ki-orange)",
@@ -16,12 +17,13 @@ const colorMap: Record<string, string> = {
   purple: "var(--color-ki-purple)",
 };
 const barColor = colorMap[color] ?? colorMap.orange;
+const displayValue = unknown ? "—" : value.toLocaleString("es-ES");
 ---
 
 <div>
   <div class="mb-1 flex items-baseline justify-between text-xs">
     <span class="font-semibold text-[var(--color-text)]">{label}</span>
-    <span class="font-mono text-[var(--color-text-muted)]">{value.toLocaleString("es-ES")}</span>
+    <span class="font-mono text-[var(--color-text-muted)]">{displayValue}</span>
   </div>
   <div class="h-3 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
     <div

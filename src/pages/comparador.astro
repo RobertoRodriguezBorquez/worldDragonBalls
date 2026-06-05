@@ -1,7 +1,14 @@
 ---
 import Layout from "@layouts/Layout.astro";
 import PowerBar from "@components/personajes/PowerBar.astro";
-import { getFeaturedCharacters, parseKi } from "@lib/api";
+import {
+  getFeaturedCharacters,
+  parseKi,
+  STORY_ARCS,
+  getCharacterSagas,
+  characterInSaga,
+  type SagaId,
+} from "@lib/api";
 
 const characters = await getFeaturedCharacters();
 
@@ -10,6 +17,11 @@ const fallbackB = characters[1] ?? characters[0];
 
 const queryA = Number(Astro.url.searchParams.get("a"));
 const queryB = Number(Astro.url.searchParams.get("b"));
+const querySaga = Astro.url.searchParams.get("saga");
+const validSaga: SagaId = STORY_ARCS.some((s) => s.id === querySaga)
+  ? (querySaga as SagaId)
+  : "all";
+
 const aParam = Number.isFinite(queryA) && queryA > 0 ? queryA : fallbackA?.id;
 const bParam = Number.isFinite(queryB) && queryB > 0 ? queryB : fallbackB?.id;
 const a = characters.find((c) => c.id === aParam) ?? fallbackA;
@@ -23,6 +35,12 @@ const kiA = parseKi(a.ki);
 const kiB = parseKi(b.ki);
 const max = Math.max(kiA, kiB, 1);
 const winner = kiA === kiB ? null : kiA > kiB ? a : b;
+const totalKi = kiA + kiB;
+const pctA = totalKi > 0 ? Math.round((kiA / totalKi) * 100) : 50;
+const pctB = 100 - pctA;
+const diffPct = max > 0 ? Math.round((Math.abs(kiA - kiB) / max) * 100) : 0;
+
+const races = [...new Set(characters.map((c) => c.race).filter(Boolean))].sort();
 
 const charactersJson = JSON.stringify(
   characters.map((c) => ({
@@ -30,267 +48,718 @@ const charactersJson = JSON.stringify(
     name: c.name,
     ki: c.ki,
     race: c.race,
+    gender: c.gender,
+    affiliation: c.affiliation,
     image: c.image,
+    sagas: getCharacterSagas(c),
   }))
 );
+const sagasJson = JSON.stringify(STORY_ARCS);
+const initialSaga = validSaga;
 ---
 
 <Layout
   title="Comparador | World Dragon Balls"
-  description="Compara el nivel de Ki de dos personajes de Dragon Ball."
+  description="Compara el nivel de Ki de dos personajes de Dragon Ball. Filtra por saga, raza o nombre."
 >
   <section
     class="mx-auto max-w-6xl px-4 py-6"
     data-comparador
     data-characters={charactersJson}
+    data-sagas={sagasJson}
     data-initial-a={a.id}
     data-initial-b={b.id}
+    data-initial-saga={initialSaga}
   >
-    <header class="mb-6 text-center">
-      <h1 class="text-3xl font-extrabold text-[var(--color-text)] md:text-4xl">
-        Comparador de poder
+    <header class="mb-5 text-center">
+      <p
+        class="mb-1 inline-block rounded-full border border-[var(--color-ki-yellow)]/40 bg-[var(--color-ki-yellow)]/10 px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-ki-yellow)]"
+      >
+        Tournament Arena
+      </p>
+      <h1
+        class="font-display text-3xl uppercase tracking-wide text-[var(--color-text)] md:text-5xl"
+      >
+        Comparador<span class="text-[var(--color-ki-orange)]">.</span>
       </h1>
       <p class="mt-1 text-sm text-[var(--color-text-muted)]">
-        Elige dos personajes y compara su nivel de Ki.
+        Filtra por saga, raza o nombre y enfrenta a dos luchadores.
       </p>
     </header>
 
-    <form
-      id="comparador-form"
-      class="mb-6 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:grid-cols-2"
+    <div
+      class="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
     >
-      <label class="flex flex-col gap-1">
-        <span class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-          Personaje A
-        </span>
-        <select
-          id="select-a"
-          name="a"
-          class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
+      <div class="relative flex-1 min-w-[180px]">
+        <span
+          aria-hidden="true"
+          class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
         >
-          {characters.map((c) => (
-            <option value={c.id} selected={c.id === a.id}>{c.name}</option>
-          ))}
-        </select>
-      </label>
-      <label class="flex flex-col gap-1">
-        <span class="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-          Personaje B
-        </span>
-        <select
-          id="select-b"
-          name="b"
-          class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
-        >
-          {characters.map((c) => (
-            <option value={c.id} selected={c.id === b.id}>{c.name}</option>
-          ))}
-        </select>
-      </label>
-      <button
-        type="submit"
-        class="md:col-span-2 rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[var(--color-accent-hover)]"
-      >
-        Comparar
-      </button>
-    </form>
-
-    <div id="comparador-results" class="grid gap-6 md:grid-cols-2">
-      {[a, b].map((c, idx) => {
-        const ki = idx === 0 ? kiA : kiB;
-        const color = idx === 0 ? "orange" : "blue";
-        const isWinner = winner && winner.id === c.id;
-        return (
-          <article
-            data-card-id={c.id}
-            data-card-slot={idx === 0 ? "a" : "b"}
-            class={`rounded-3xl border-2 p-4 transition ${isWinner ? "border-[var(--color-ki-yellow)] ki-pulse" : "border-[var(--color-border)]"} bg-[var(--color-surface)]`}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-4 w-4"
           >
-            <div class="mb-3 flex items-center gap-3">
-              <img
-                src={c.image}
-                alt={c.name}
-                referrerpolicy="no-referrer"
-                class="h-20 w-20 rounded-full border-2 border-[var(--color-accent)] bg-[var(--color-bg-muted)] object-contain p-1"
-              />
-              <div class="flex-1">
-                <p class="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">
-                  {c.race}
-                </p>
-                <h2 class="text-xl font-extrabold text-[var(--color-text)]">
-                  {c.name}
-                </h2>
-              </div>
-              {isWinner && (
-                <span class="rounded-full bg-[var(--color-ki-yellow)] px-2 py-0.5 text-xs font-bold uppercase text-black">
-                  Gana
-                </span>
-              )}
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+        </span>
+        <input
+          id="cmp-search"
+          type="search"
+          placeholder="Buscar por nombre..."
+          class="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] py-2 pl-9 pr-3 text-sm outline-none focus:border-[var(--color-accent)]"
+          autocomplete="off"
+        />
+      </div>
+      <div class="hidden md:block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+        Saga
+      </div>
+      <div
+        id="cmp-sagas"
+        role="tablist"
+        aria-label="Filtrar por saga"
+        class="scroll-snap-x no-scrollbar -mx-1 flex w-full max-w-full gap-2 overflow-x-auto px-1 md:w-auto md:flex-wrap md:overflow-visible"
+      >
+        {
+          STORY_ARCS.map((s) => (
+            <button
+              type="button"
+              role="tab"
+              data-saga={s.id}
+              aria-selected={s.id === initialSaga}
+              class={`cmp-saga shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                s.id === initialSaga
+                  ? "border-transparent text-black"
+                  : "border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+              style={s.id === initialSaga ? `background: ${s.color}` : ""}
+            >
+              {s.name}
+            </button>
+          ))
+        }
+      </div>
+      <select
+        id="cmp-race"
+        class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+      >
+        <option value="">Todas las razas</option>
+        {races.map((r) => <option value={r.toLowerCase()}>{r}</option>)}
+      </select>
+    </div>
+
+    <div class="cmp-arena relative">
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 text-center font-display-shade text-[120px] leading-none text-[var(--color-text)] opacity-[0.04] md:text-[180px]"
+      >
+        VS
+      </div>
+
+      <div class="relative z-10 grid gap-4 md:grid-cols-[1fr_auto_1fr]">
+        <article
+          data-corner="a"
+          class="cmp-corner group relative overflow-hidden rounded-3xl border-2 border-[var(--color-ki-orange)]/50 bg-gradient-to-br from-[var(--color-ki-orange)]/10 via-[var(--color-surface)] to-[var(--color-surface)] p-5"
+        >
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[var(--color-ki-orange)] opacity-10 blur-2xl"
+          >
+          </div>
+          <div
+            class="mb-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-ki-orange)]"
+          >
+            <span>Luchador A</span>
+            <span
+              class="rounded-full bg-[var(--color-ki-orange)] px-2 py-0.5 text-white"
+              >A</span
+            >
+          </div>
+          <div class="flex items-center gap-4">
+            <img
+              data-portrait="a"
+              src={a.image}
+              alt={a.name}
+              referrerpolicy="no-referrer"
+              class="cmp-portrait h-24 w-24 rounded-2xl border-2 border-[var(--color-ki-orange)] bg-[var(--color-bg-muted)] object-contain p-1"
+            />
+            <div class="min-w-0 flex-1">
+              <p
+                data-race="a"
+                class="truncate text-[10px] font-bold uppercase tracking-widest text-[var(--color-ki-orange)]"
+              >
+                {a.race}
+              </p>
+              <h2
+                data-name="a"
+                class="truncate font-display text-2xl uppercase tracking-wide text-[var(--color-text)]"
+              >
+                {a.name}
+              </h2>
+              <p class="text-xs text-[var(--color-text-muted)]">
+                <span data-affiliation="a">{a.affiliation}</span>
+              </p>
             </div>
-            <PowerBar label="Ki" value={ki} max={max} color={color} />
-          </article>
-        );
-      })}
+          </div>
+          <div class="mt-4">
+            <PowerBar
+              label="Ki"
+              value={kiA}
+              max={max}
+              color="orange"
+            />
+            <p class="mt-1 text-right text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+              <span data-pct="a">{pctA}</span>% del Ki total
+            </p>
+          </div>
+        </article>
+
+        <div
+          class="flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <div
+            class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[var(--color-ki-yellow)] bg-[var(--color-bg-elevated)] font-display text-lg text-[var(--color-ki-yellow)] shadow-[0_0_24px_var(--color-ki-yellow)] animate-ki md:h-16 md:w-16"
+          >
+            VS
+          </div>
+        </div>
+
+        <article
+          data-corner="b"
+          class="cmp-corner group relative overflow-hidden rounded-3xl border-2 border-[var(--color-ki-blue)]/50 bg-gradient-to-bl from-[var(--color-ki-blue)]/10 via-[var(--color-surface)] to-[var(--color-surface)] p-5"
+        >
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute -left-12 -top-12 h-40 w-40 rounded-full bg-[var(--color-ki-blue)] opacity-10 blur-2xl"
+          >
+          </div>
+          <div
+            class="mb-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-ki-blue)]"
+          >
+            <span
+              class="rounded-full bg-[var(--color-ki-blue)] px-2 py-0.5 text-white"
+              >B</span
+            >
+            <span>Luchador B</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <img
+              data-portrait="b"
+              src={b.image}
+              alt={b.name}
+              referrerpolicy="no-referrer"
+              class="cmp-portrait h-24 w-24 rounded-2xl border-2 border-[var(--color-ki-blue)] bg-[var(--color-bg-muted)] object-contain p-1"
+            />
+            <div class="min-w-0 flex-1">
+              <p
+                data-race="b"
+                class="truncate text-[10px] font-bold uppercase tracking-widest text-[var(--color-ki-blue)]"
+              >
+                {b.race}
+              </p>
+              <h2
+                data-name="b"
+                class="truncate font-display text-2xl uppercase tracking-wide text-[var(--color-text)]"
+              >
+                {b.name}
+              </h2>
+              <p class="text-xs text-[var(--color-text-muted)]">
+                <span data-affiliation="b">{b.affiliation}</span>
+              </p>
+            </div>
+          </div>
+          <div class="mt-4">
+            <PowerBar label="Ki" value={kiB} max={max} color="blue" />
+            <p class="mt-1 text-right text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+              <span data-pct="b">{pctB}</span>% del Ki total
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <div class="mt-3 flex justify-center">
+        <button
+          id="cmp-swap"
+          type="button"
+          aria-label="Intercambiar A y B"
+          class="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--color-text)] transition hover:border-[var(--color-ki-yellow)] hover:text-[var(--color-ki-yellow)]"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-3.5 w-3.5"
+          >
+            <path d="m17 3 4 4-4 4"></path>
+            <path d="M21 7H3"></path>
+            <path d="m7 21-4-4 4-4"></path>
+            <path d="M3 17h18"></path>
+          </svg>
+          Intercambiar
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 md:grid-cols-4"
+    >
+      <div class="cmp-stat rounded-xl bg-[var(--color-bg)] p-3 text-center">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+          Ki
+        </p>
+        <p class="mt-0.5 font-mono text-base font-bold text-[var(--color-text)]">
+          <span data-stat-ki-a>{kiA.toLocaleString("es-ES")}</span>
+          <span class="text-[var(--color-text-muted)]"> vs </span>
+          <span data-stat-ki-b>{kiB.toLocaleString("es-ES")}</span>
+        </p>
+      </div>
+      <div class="cmp-stat rounded-xl bg-[var(--color-bg)] p-3 text-center">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+          Raza
+        </p>
+        <p class="mt-0.5 text-xs font-semibold text-[var(--color-text)]">
+          <span data-stat-race-a>{a.race}</span>
+        </p>
+        <p class="mt-0.5 text-xs font-semibold text-[var(--color-text)]">
+          <span data-stat-race-b>{b.race}</span>
+        </p>
+      </div>
+      <div class="cmp-stat rounded-xl bg-[var(--color-bg)] p-3 text-center">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+          Afiliación
+        </p>
+        <p class="mt-0.5 text-xs font-semibold text-[var(--color-text)]">
+          <span data-stat-aff-a>{a.affiliation}</span>
+        </p>
+        <p class="mt-0.5 text-xs font-semibold text-[var(--color-text)]">
+          <span data-stat-aff-b>{b.affiliation}</span>
+        </p>
+      </div>
+      <div class="cmp-stat rounded-xl bg-[var(--color-bg)] p-3 text-center">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+          Género
+        </p>
+        <p class="mt-0.5 text-xs font-semibold text-[var(--color-text)]">
+          <span data-stat-gender-a>{a.gender}</span>
+        </p>
+        <p class="mt-0.5 text-xs font-semibold text-[var(--color-text)]">
+          <span data-stat-gender-b>{b.gender}</span>
+        </p>
+      </div>
     </div>
 
     <p
-      id="comparador-summary"
-      class="mt-6 text-center text-sm font-semibold text-[var(--color-text)]"
+      id="cmp-summary"
+      class="mt-4 rounded-2xl border border-[var(--color-ki-yellow)]/30 bg-gradient-to-r from-[var(--color-ki-orange)]/5 via-[var(--color-ki-yellow)]/10 to-[var(--color-ki-blue)]/5 p-4 text-center"
+      aria-live="polite"
     >
-      {winner ? `🏆 ${winner.name} gana con ${(winner.id === a.id ? kiA : kiB).toLocaleString("es-ES")} de Ki` : "Empate"}
+      {
+        winner
+          ? `🏆 ${winner.name} gana — <strong>${diffPct}%</strong> más de Ki`
+          : "⚖️ Empate técnico"
+      }
     </p>
+
+    <div class="mt-6">
+      <div class="mb-3 flex items-baseline justify-between gap-2">
+        <h2 class="font-display text-lg uppercase tracking-wide text-[var(--color-text)]">
+          Elige un luchador
+        </h2>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+          <span id="cmp-visible-count">{characters.length}</span> disponibles
+        </p>
+      </div>
+      <div
+        id="cmp-grid"
+        class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+      >
+        {
+          characters.map((c) => (
+            <article
+              data-cmp-card={c.id}
+              data-saga-list={getCharacterSagas(c).join(",")}
+              data-race-slug={c.race.toLowerCase()}
+              data-name-slug={c.name.toLowerCase()}
+              class="cmp-card group relative flex flex-col overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] transition hover:border-[var(--color-ki-yellow)]"
+            >
+              <div class="relative aspect-square overflow-hidden bg-[var(--color-bg-muted)]">
+                <img
+                  src={c.image}
+                  alt={c.name}
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  class="h-full w-full object-contain p-1.5 transition group-hover:scale-105"
+                />
+                <span
+                  class="cmp-tag-a pointer-events-none absolute left-1 top-1 hidden rounded-full bg-[var(--color-ki-orange)] px-1.5 py-0.5 text-[8px] font-bold uppercase text-white"
+                >
+                  A
+                </span>
+                <span
+                  class="cmp-tag-b pointer-events-none absolute right-1 top-1 hidden rounded-full bg-[var(--color-ki-blue)] px-1.5 py-0.5 text-[8px] font-bold uppercase text-white"
+                >
+                  B
+                </span>
+              </div>
+              <div class="flex flex-col gap-1 p-2">
+                <h3 class="line-clamp-1 text-xs font-bold text-[var(--color-text)]">
+                  {c.name}
+                </h3>
+                <p class="line-clamp-1 text-[10px] text-[var(--color-text-muted)]">
+                  {c.race} · {parseKi(c.ki).toLocaleString("es-ES")}
+                </p>
+                <div class="mt-1 flex gap-1">
+                  <button
+                    type="button"
+                    data-pick="a"
+                    data-id={c.id}
+                    aria-label={`Asignar ${c.name} al luchador A`}
+                    class="flex-1 rounded-full bg-[var(--color-ki-orange)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-white transition hover:brightness-110"
+                  >
+                    +A
+                  </button>
+                  <button
+                    type="button"
+                    data-pick="b"
+                    data-id={c.id}
+                    aria-label={`Asignar ${c.name} al luchador B`}
+                    class="flex-1 rounded-full bg-[var(--color-ki-blue)] px-1.5 py-0.5 text-[10px] font-bold uppercase text-white transition hover:brightness-110"
+                  >
+                    +B
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+      <p
+        id="cmp-empty"
+        class="hidden rounded-2xl border border-dashed border-[var(--color-border)] py-10 text-center text-sm text-[var(--color-text-muted)]"
+      >
+        No hay personajes que coincidan con tu búsqueda.
+      </p>
+    </div>
   </section>
 
   <script is:inline>
     (() => {
       const section = document.querySelector("[data-comparador]");
       if (!section) return;
-      const characters = JSON.parse(section.dataset.characters || "[]");
-      const form = document.getElementById("comparador-form");
-      const selectA = document.getElementById("select-a");
-      const selectB = document.getElementById("select-b");
-      const results = document.getElementById("comparador-results");
-      const summary = document.getElementById("comparador-summary");
-      if (!form || !selectA || !selectB || !results || !summary) return;
 
+      const characters = JSON.parse(section.dataset.characters || "[]");
+      const sagas = JSON.parse(section.dataset.sagas || "[]");
       const byId = new Map(characters.map((c) => [c.id, c]));
 
+      const KI_MULTIPLIERS = {
+        thousand: 1e3, million: 1e6, billion: 1e9, trillion: 1e12,
+        quadrillion: 1e15, quintillion: 1e18, sextillion: 1e21,
+        septillion: 1e24, septllion: 1e24, octillion: 1e27,
+        nonillion: 1e30, decillion: 1e33,
+      };
       const parseKi = (ki) => {
         if (!ki) return 0;
-        const s = String(ki).toLowerCase().trim();
-        if (s === "unknown" || s === "?" || s === "") return 0;
-        const cleaned = s.replace(/\./g, "").replace(/,/g, "");
-        const n = Number.parseInt(cleaned, 10);
-        return Number.isFinite(n) ? n : 0;
+        const raw = String(ki).toLowerCase().trim();
+        if (raw === "unknown" || raw === "?" || raw === "") return 0;
+        const parts = raw.split(/\s+/);
+        const num = Number.parseFloat((parts[0] || "").replace(/[.,]/g, ""));
+        if (!Number.isFinite(num)) return 0;
+        const suffix = (parts[1] || "").replace(/[^a-z]/g, "");
+        const mult = suffix ? KI_MULTIPLIERS[suffix] : 1;
+        if (mult === undefined) {
+          return Number.isFinite(Number.parseInt((parts[0] || "").replace(/[.,]/g, ""), 10))
+            ? Number.parseInt((parts[0] || "").replace(/[.,]/g, ""), 10)
+            : 0;
+        }
+        return num * mult;
       };
 
-      const formatKi = (n) => n.toLocaleString("es-ES");
-
+      const formatKi = (n) => (n > 0 ? n.toLocaleString("es-ES") : "—");
       const escape = (s) =>
         String(s).replace(/[&<>"']/g, (ch) =>
           ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])
         );
-
-      const renderCard = (char, slot, ki, max, isWinner) => {
-        const pct = max > 0 ? Math.min(100, Math.max(2, (ki / max) * 100)) : 0;
-        const colorVar = slot === "a" ? "--color-ki-orange" : "--color-ki-blue";
-        const barColor = `var(${colorVar})`;
-        return `
-          <article
-            data-card-id="${char.id}"
-            data-card-slot="${slot}"
-            class="rounded-3xl border-2 p-4 transition ${isWinner ? "border-[var(--color-ki-yellow)] ki-pulse" : "border-[var(--color-border)]"} bg-[var(--color-surface)]"
-          >
-            <div class="mb-3 flex items-center gap-3">
-              <img
-                src="${escape(char.image)}"
-                alt="${escape(char.name)}"
-                referrerpolicy="no-referrer"
-                class="h-20 w-20 rounded-full border-2 border-[var(--color-accent)] bg-[var(--color-bg-muted)] object-contain p-1"
-              />
-              <div class="flex-1">
-                <p class="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">
-                  ${escape(char.race)}
-                </p>
-                <h2 class="text-xl font-extrabold text-[var(--color-text)]">
-                  ${escape(char.name)}
-                </h2>
-              </div>
-              ${isWinner
-                ? `<span class="rounded-full bg-[var(--color-ki-yellow)] px-2 py-0.5 text-xs font-bold uppercase text-black">Gana</span>`
-                : ""}
-            </div>
-            <div>
-              <div class="mb-1 flex items-baseline justify-between text-xs">
-                <span class="font-semibold text-[var(--color-text)]">Ki</span>
-                <span class="font-mono text-[var(--color-text-muted)]">${formatKi(ki)}</span>
-              </div>
-              <div class="h-3 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
-                <div
-                  class="power-bar h-full rounded-full transition-all duration-1000"
-                  style="width: ${pct}%; background: linear-gradient(90deg, ${barColor}, var(--color-ki-yellow));"
-                  data-target-width="${pct}"
-                />
-              </div>
-            </div>
-          </article>
-        `;
+      const colorForSaga = (id) => {
+        const s = sagas.find((x) => x.id === id);
+        return s ? s.color : "var(--color-ki-yellow)";
       };
 
-      const update = (aId, bId, pushUrl = true) => {
-        const charA = byId.get(Number(aId)) || characters[0];
-        const charB = byId.get(Number(bId)) || characters[1] || characters[0];
-        if (!charA || !charB) return;
+      const $ = (sel) => section.querySelector(sel);
 
-        const kiA = parseKi(charA.ki);
-        const kiB = parseKi(charB.ki);
-        const max = Math.max(kiA, kiB, 1);
-        const winner = kiA === kiB ? null : kiA > kiB ? charA : charB;
-        const isWinnerA = winner && winner.id === charA.id;
-        const isWinnerB = winner && winner.id === charB.id;
+      const els = {
+        a: {
+          portrait: $('[data-portrait="a"]'),
+          name: $('[data-name="a"]'),
+          race: $('[data-race="a"]'),
+          affiliation: $('[data-affiliation="a"]'),
+          pct: $('[data-pct="a"]'),
+        },
+        b: {
+          portrait: $('[data-portrait="b"]'),
+          name: $('[data-name="b"]'),
+          race: $('[data-race="b"]'),
+          affiliation: $('[data-affiliation="b"]'),
+          pct: $('[data-pct="b"]'),
+        },
+        stats: {
+          kiA: $("[data-stat-ki-a]"),
+          kiB: $("[data-stat-ki-b]"),
+          raceA: $("[data-stat-race-a]"),
+          raceB: $("[data-stat-race-b]"),
+          affA: $("[data-stat-aff-a]"),
+          affB: $("[data-stat-aff-b]"),
+          genderA: $("[data-stat-gender-a]"),
+          genderB: $("[data-stat-gender-b]"),
+        },
+        summary: $("#cmp-summary"),
+        grid: $("#cmp-grid"),
+        empty: $("#cmp-empty"),
+        visibleCount: $("#cmp-visible-count"),
+        search: $("#cmp-search"),
+        race: $("#cmp-race"),
+        sagaBtns: section.querySelectorAll(".cmp-saga"),
+        cornerA: $('[data-corner="a"]'),
+        cornerB: $('[data-corner="b"]'),
+        swap: $("#cmp-swap"),
+      };
 
-        results.innerHTML =
-          renderCard(charA, "a", kiA, max, !!isWinnerA) +
-          renderCard(charB, "b", kiB, max, !!isWinnerB);
+      if (!els.a.name || !els.b.name || !els.grid) return;
 
-        if (winner) {
-          const winnerKi = winner.id === charA.id ? kiA : kiB;
-          summary.textContent = `🏆 ${winner.name} gana con ${formatKi(winnerKi)} de Ki`;
-        } else {
-          summary.textContent = "Empate";
-        }
+      const state = {
+        aId: Number(section.dataset.initialA),
+        bId: Number(section.dataset.initialB),
+        saga: section.dataset.initialSaga || "all",
+        q: "",
+        race: "",
+      };
 
+      const animatePowerBar = (el) => {
+        const target = Number(el.dataset.targetWidth || 0);
+        el.style.width = "0%";
         requestAnimationFrame(() => {
-          document.querySelectorAll(".power-bar").forEach((el) => {
-            const target = Number(el.dataset.targetWidth || 0);
-            el.style.width = "0%";
-            requestAnimationFrame(() => {
-              el.style.width = target + "%";
-            });
-          });
+          el.style.width = target + "%";
         });
+      };
+
+      const updateCorner = (slot, char, _ki, pct) => {
+        const e = els[slot];
+        e.portrait.src = char.image;
+        e.portrait.alt = char.name;
+        e.name.textContent = char.name;
+        e.race.textContent = char.race;
+        e.affiliation.textContent = char.affiliation;
+        e.pct.textContent = pct;
+        const corner = slot === "a" ? els.cornerA : els.cornerB;
+        if (corner) {
+          corner.dataset.id = String(char.id);
+        }
+      };
+
+      const updateStats = (a, b) => {
+        els.stats.kiA.textContent = formatKi(parseKi(a.ki));
+        els.stats.kiB.textContent = formatKi(parseKi(b.ki));
+        els.stats.raceA.textContent = a.race;
+        els.stats.raceB.textContent = b.race;
+        els.stats.affA.textContent = a.affiliation;
+        els.stats.affB.textContent = b.affiliation;
+        els.stats.genderA.textContent = a.gender;
+        els.stats.genderB.textContent = b.gender;
+      };
+
+      const updateSummary = (a, b, kiA, kiB) => {
+        if (kiA === kiB) {
+          els.summary.innerHTML = "⚖️ Empate técnico";
+          return;
+        }
+        const winner = kiA > kiB ? a : b;
+        const total = kiA + kiB;
+        const diffPct = total > 0 ? Math.round((Math.abs(kiA - kiB) / total) * 100) : 0;
+        els.summary.innerHTML =
+          `🏆 <strong>${escape(winner.name)}</strong> gana — <strong>${diffPct}%</strong> más de Ki`;
+      };
+
+      const highlightCards = () => {
+        section.querySelectorAll("[data-cmp-card]").forEach((card) => {
+          const id = Number(card.dataset.cmpCard);
+          const tagA = card.querySelector(".cmp-tag-a");
+          const tagB = card.querySelector(".cmp-tag-b");
+          tagA.classList.toggle("hidden", id !== state.aId);
+          tagB.classList.toggle("hidden", id !== state.bId);
+          if (id === state.aId) {
+            card.classList.add("ring-2", "ring-[var(--color-ki-orange)]", "border-[var(--color-ki-orange)]");
+          } else {
+            card.classList.remove("ring-2", "ring-[var(--color-ki-orange)]", "border-[var(--color-ki-orange)]");
+          }
+          if (id === state.bId) {
+            card.classList.add("ring-2", "ring-[var(--color-ki-blue)]", "border-[var(--color-ki-blue)]");
+          } else {
+            card.classList.remove("ring-2", "ring-[var(--color-ki-blue)]", "border-[var(--color-ki-blue)]");
+          }
+        });
+      };
+
+      const updateArena = (pushUrl = true) => {
+        const a = byId.get(state.aId);
+        const b = byId.get(state.bId);
+        if (!a || !b) return;
+
+        const kiA = parseKi(a.ki);
+        const kiB = parseKi(b.ki);
+        const total = kiA + kiB;
+        const pctA = total > 0 ? Math.round((kiA / total) * 100) : 50;
+        const pctB = 100 - pctA;
+        const max = Math.max(kiA, kiB, 1);
+
+        updateCorner("a", a, kiA, pctA);
+        updateCorner("b", b, kiB, pctB);
+        updateStats(a, b);
+        updateSummary(a, b, kiA, kiB);
+
+        const barA = els.cornerA.querySelector(".power-bar");
+        const barB = els.cornerB.querySelector(".power-bar");
+        if (barA) {
+          const newPct = max > 0 ? Math.min(100, Math.max(2, (kiA / max) * 100)) : 0;
+          barA.dataset.targetWidth = String(newPct);
+          barA.style.background = `linear-gradient(90deg, var(--color-ki-orange), var(--color-ki-yellow))`;
+        }
+        if (barB) {
+          const newPct = max > 0 ? Math.min(100, Math.max(2, (kiB / max) * 100)) : 0;
+          barB.dataset.targetWidth = String(newPct);
+          barB.style.background = `linear-gradient(90deg, var(--color-ki-blue), var(--color-ki-yellow))`;
+        }
+        requestAnimationFrame(() => {
+          if (barA) animatePowerBar(barA);
+          if (barB) animatePowerBar(barB);
+        });
+
+        highlightCards();
 
         if (pushUrl) {
           const url = new URL(window.location.href);
-          url.searchParams.set("a", String(charA.id));
-          url.searchParams.set("b", String(charB.id));
-          window.history.pushState({ a: charA.id, b: charB.id }, "", url);
+          url.searchParams.set("a", String(a.id));
+          url.searchParams.set("b", String(b.id));
+          if (state.saga && state.saga !== "all") {
+            url.searchParams.set("saga", state.saga);
+          } else {
+            url.searchParams.delete("saga");
+          }
+          window.history.pushState({ a: a.id, b: b.id, saga: state.saga }, "", url);
         }
       };
 
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        update(selectA.value, selectB.value);
+      const applyFilters = () => {
+        const q = state.q;
+        const saga = state.saga;
+        const race = state.race;
+        let visible = 0;
+        section.querySelectorAll("[data-cmp-card]").forEach((card) => {
+          const list = (card.dataset.sagaList || "").split(",");
+          const cardRace = card.dataset.raceSlug || "";
+          const name = card.dataset.nameSlug || "";
+          const okSaga = saga === "all" || list.includes(saga);
+          const okRace = !race || cardRace === race;
+          const okName = !q || name.includes(q);
+          const ok = okSaga && okRace && okName;
+          card.style.display = ok ? "" : "none";
+          if (ok) visible++;
+        });
+        els.visibleCount.textContent = String(visible);
+        els.empty.classList.toggle("hidden", visible !== 0);
+        els.grid.classList.toggle("hidden", visible === 0);
+      };
+
+      const setSaga = (id, pushUrl = true) => {
+        state.saga = id;
+        els.sagaBtns.forEach((btn) => {
+          const isActive = btn.dataset.saga === id;
+          btn.setAttribute("aria-selected", isActive ? "true" : "false");
+          btn.style.background = isActive ? colorForSaga(id) : "";
+          btn.classList.toggle("border-transparent", isActive);
+          btn.classList.toggle("text-black", isActive);
+          btn.classList.toggle("border-[var(--color-border)]", !isActive);
+          btn.classList.toggle("bg-[var(--color-bg)]", !isActive);
+          btn.classList.toggle("text-[var(--color-text-muted)]", !isActive);
+        });
+        applyFilters();
+        if (pushUrl) {
+          const url = new URL(window.location.href);
+          if (id === "all") url.searchParams.delete("saga");
+          else url.searchParams.set("saga", id);
+          window.history.replaceState({ ...state }, "", url);
+        }
+      };
+
+      els.sagaBtns.forEach((btn) => {
+        btn.addEventListener("click", () => setSaga(btn.dataset.saga));
       });
 
-      selectA.addEventListener("change", () => {
-        update(selectA.value, selectB.value);
+      els.search.addEventListener("input", (e) => {
+        state.q = e.target.value.toLowerCase().trim();
+        applyFilters();
       });
-      selectB.addEventListener("change", () => {
-        update(selectA.value, selectB.value);
+
+      els.race.addEventListener("change", (e) => {
+        state.race = e.target.value;
+        applyFilters();
+      });
+
+      section.querySelectorAll("[data-pick]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const slot = btn.dataset.pick;
+          const id = Number(btn.dataset.id);
+          if (slot === "a") state.aId = id;
+          else state.bId = id;
+          updateArena();
+        });
+      });
+
+      els.swap.addEventListener("click", () => {
+        const tmp = state.aId;
+        state.aId = state.bId;
+        state.bId = tmp;
+        updateArena();
       });
 
       window.addEventListener("popstate", () => {
         const url = new URL(window.location.href);
         const aId = Number(url.searchParams.get("a"));
         const bId = Number(url.searchParams.get("b"));
-        if (Number.isFinite(aId) && byId.has(aId)) selectA.value = String(aId);
-        if (Number.isFinite(bId) && byId.has(bId)) selectB.value = String(bId);
-        update(selectA.value, selectB.value, false);
+        const saga = url.searchParams.get("saga") || "all";
+        if (Number.isFinite(aId) && byId.has(aId)) state.aId = aId;
+        if (Number.isFinite(bId) && byId.has(bId)) state.bId = bId;
+        state.saga = saga;
+        els.search.value = "";
+        state.q = "";
+        setSaga(saga, false);
+        updateArena(false);
       });
 
+      // Init from URL
       const initialA = Number(section.dataset.initialA);
       const initialB = Number(section.dataset.initialB);
+      const initialSaga = section.dataset.initialSaga || "all";
+      state.aId = initialA;
+      state.bId = initialB;
+      state.saga = initialSaga;
       const url = new URL(window.location.href);
-      const queryA = Number(url.searchParams.get("a"));
-      const queryB = Number(url.searchParams.get("b"));
-      const targetA = Number.isFinite(queryA) && byId.has(queryA) ? queryA : initialA;
-      const targetB = Number.isFinite(queryB) && byId.has(queryB) ? queryB : initialB;
-      if (targetA !== initialA || targetB !== initialB) {
-        selectA.value = String(targetA);
-        selectB.value = String(targetB);
-        update(targetA, targetB, false);
-      }
+      const qA = Number(url.searchParams.get("a"));
+      const qB = Number(url.searchParams.get("b"));
+      const qSaga = url.searchParams.get("saga") || "all";
+      if (Number.isFinite(qA) && byId.has(qA)) state.aId = qA;
+      if (Number.isFinite(qB) && byId.has(qB)) state.bId = qB;
+      if (qSaga) setSaga(qSaga, false);
+      updateArena(false);
     })();
   </script>
 </Layout>

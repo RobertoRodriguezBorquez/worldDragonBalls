@@ -1,18 +1,63 @@
 ---
 const categorias = [
-  "dragon ball",
-  "dragon ball z",
-  "dragon ball super",
-  "dragon ball gt",
+  {
+    id: "dragon-ball",
+    name: "Dragon Ball",
+    range: "1986",
+    color: "from-orange-500 to-amber-500",
+    icon: "🐉",
+  },
+  {
+    id: "dragon-ball-z",
+    name: "Dragon Ball Z",
+    range: "1989",
+    color: "from-blue-600 to-cyan-500",
+    icon: "⚡",
+  },
+  {
+    id: "dragon-ball-super",
+    name: "Dragon Ball Super",
+    range: "2015",
+    color: "from-violet-600 to-fuchsia-500",
+    icon: "✨",
+  },
+  {
+    id: "dragon-ball-gt",
+    name: "Dragon Ball GT",
+    range: "1996",
+    color: "from-rose-500 to-red-600",
+    icon: "🌌",
+  },
 ];
 ---
-<img src="./titulo/titulo.png" alt="mundo de dragón ball" class="h-18 w-auto mx-auto">
-<section class="max-w-4xl mx-2 bg-amber-50 my-2  p-4 flex justify-center items-center gap-1 rounded-b-md md:mx-auto">
-  {
-    categorias.map((categoria) => (
-      <button class="  bg-amber-500 py-2 px-4 cursor-pointer hover:bg-amber-400 rounded-full ">
-        <p class="font-semibold text-xs text-amber-50 capitalize">{categoria}</p>
-      </button>
-    ))
-  }
+
+<section class="mx-auto max-w-7xl px-4 py-6">
+  <h2 class="mb-4 text-xl font-bold text-[var(--color-text)] md:text-2xl">
+    Explorar por saga
+  </h2>
+  <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+    {
+      categorias.map((cat) => (
+        <a
+          href={`/personajes?saga=${cat.id}`}
+          class={`group relative flex h-28 flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br ${cat.color} p-4 text-white shadow-sm transition hover:scale-[1.03] hover:shadow-lg`}
+          aria-label={`Ver personajes de ${cat.name}`}
+        >
+          <span class="text-2xl" aria-hidden="true">{cat.icon}</span>
+          <div>
+            <h3 class="text-sm font-bold leading-tight md:text-base">
+              {cat.name}
+            </h3>
+            <p class="text-[10px] font-semibold uppercase tracking-wider opacity-90">
+              {cat.range}
+            </p>
+          </div>
+          <span
+            class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/20 blur-xl transition group-hover:scale-150"
+            aria-hidden="true"
+          />
+        </a>
+      ))
+    }
+  </div>
 </section>
