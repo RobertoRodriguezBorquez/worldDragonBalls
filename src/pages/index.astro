@@ -9,6 +9,7 @@ import { getFeaturedCharacters, parseKi, SAGAS } from "@lib/api";
 
 const allCharacters = await getFeaturedCharacters();
 const featured = allCharacters.slice(0, 16);
+const rosterPool = allCharacters.slice(0, 20);
 const raceCount = new Set(allCharacters.map((c) => c.race).filter(Boolean)).size;
 
 const sortedByKi = [...featured].sort((a, b) => {
@@ -40,7 +41,7 @@ const top2 = sortedByKi[1] ?? featured[1] ?? featured[0];
     />
 
     <section id="destacados" class="mx-auto max-w-7xl px-4">
-      <CharacterSelect characters={featured} />
+      <CharacterSelect characters={rosterPool} count={14} />
     </section>
 
     <VersusMode fighterA={top1} fighterB={top2} />
