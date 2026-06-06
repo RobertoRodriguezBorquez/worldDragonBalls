@@ -217,6 +217,105 @@ body.intro-mode #site-header {
   clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);
 }
 
+/* ================== COMPARADOR EFFECTS ================== */
+
+@keyframes cmp-shake {
+  0%, 100% { translate: 0 0; }
+  10% { translate: -4px -2px; }
+  20% { translate: 3px 1px; }
+  30% { translate: -3px 3px; }
+  40% { translate: 2px -3px; }
+  50% { translate: -1px 2px; }
+  60% { translate: 1px -1px; }
+  70% { translate: -2px 0; }
+  80% { translate: 0 2px; }
+  90% { translate: 1px -1px; }
+}
+.cmp-shake {
+  animation: cmp-shake 0.5s ease-in-out;
+}
+
+.cmp-shake-hard {
+  animation: cmp-shake 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Impact ring — se expande desde el centro y se desvanece */
+@keyframes cmp-impact-ring {
+  0% {
+    opacity: 1;
+    scale: 0.3;
+    border-width: 6px;
+  }
+  100% {
+    opacity: 0;
+    scale: 3;
+    border-width: 1px;
+  }
+}
+.cmp-impact-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: var(--color-ki-yellow);
+  mix-blend-mode: screen;
+  animation: cmp-impact-ring 0.7s ease-out forwards;
+}
+
+/* Flash blanco/ki que cubre el arena */
+@keyframes cmp-flash {
+  0% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+.cmp-flash-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(circle at center, var(--color-ki-yellow), var(--color-ki-orange));
+  mix-blend-mode: overlay;
+  animation: cmp-flash 0.4s ease-out forwards;
+}
+
+/* Partícula chispa */
+@keyframes cmp-spark {
+  0% {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+  100% {
+    opacity: 0;
+    scale: 0;
+    translate: var(--dx, 100px) var(--dy, -100px);
+  }
+}
+.cmp-spark {
+  position: absolute;
+  z-index: 25;
+  pointer-events: none;
+  border-radius: 50%;
+  background: var(--color-ki-yellow);
+  box-shadow: 0 0 4px var(--color-ki-yellow), 0 0 8px var(--color-ki-orange);
+  animation: cmp-spark 0.6s ease-out forwards;
+}
+
+/* Ki surge — pulso de energía en los bordes de las esquinas */
+@keyframes cmp-ki-surge {
+  0% { box-shadow: 0 0 0 0 transparent; }
+  20% { box-shadow: 0 0 30px 8px var(--color-ki-yellow); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.cmp-ki-surge-orange {
+  animation: cmp-ki-surge 0.8s ease-out;
+}
+.cmp-ki-surge-blue {
+  animation: cmp-ki-surge 0.8s ease-out;
+}
+
 /* Loader spinner 4★ girando más rápido */
 @keyframes db-spin-fast {
   to { transform: rotate(360deg); }
@@ -558,7 +657,7 @@ body.intro-mode #site-header {
 .mk-stage {
   position: relative;
   width: 100%;
-  height: 340px;
+  height: 380px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -614,8 +713,8 @@ body.intro-mode #site-header {
 
 .mk-stage-card {
   position: relative;
-  width: 240px;
-  height: 280px;
+  width: 260px;
+  height: 300px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -734,9 +833,9 @@ body.intro-mode #site-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 4px;
+  gap: 3px;
   width: 100%;
-  padding: 0.3rem 0;
+  padding: 0.2rem 0;
 }
 
 .mk-tile {
@@ -770,7 +869,7 @@ body.intro-mode #site-header {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 22%;
+  object-position: center 15%;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
   transition: transform 0.25s, filter 0.25s;
   display: block;
@@ -804,12 +903,12 @@ body.intro-mode #site-header {
 
 /* Responsive */
 @media (max-width: 1023px) {
-  .mk-stage { height: 280px; }
-  .mk-stage-card { width: 200px; height: 230px; }
+  .mk-stage { height: 300px; }
+  .mk-stage-card { width: 210px; height: 240px; }
 }
 @media (max-width: 639px) {
-  .mk-stage { height: 220px; }
-  .mk-stage-card { width: 150px; height: 170px; }
-  .mk-roster-grid { gap: 3px; }
+  .mk-stage { height: 240px; }
+  .mk-stage-card { width: 160px; height: 180px; }
+  .mk-roster-grid { gap: 2px; }
   .mk-name { font-size: 1.3rem; }
 }
