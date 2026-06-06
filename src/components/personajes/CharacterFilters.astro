@@ -1,68 +1,127 @@
 ---
+import type { Character } from "@lib/api";
+import { BIG_SAGAS, getBigSagasCount } from "@lib/api";
+
 interface Props {
   races: string[];
+  characters: Pick<Character, "id" | "affiliation">[];
 }
-const { races } = Astro.props;
+const { races, characters } = Astro.props;
+const counts = getBigSagasCount(characters);
 ---
 
-<form
-  id="character-filters"
-  class="mb-4 flex flex-col gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 md:flex-row md:items-center"
-  onsubmit="return false"
->
-  <label class="flex-1">
-    <span class="sr-only">Buscar personaje</span>
-    <input
-      type="search"
-      name="q"
-      id="filter-q"
-      placeholder="Buscar personaje..."
-      class="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
-    />
-  </label>
-
-  <label>
-    <span class="sr-only">Filtrar por raza</span>
-    <select
-      name="race"
-      id="filter-race"
-      class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
-    >
-      <option value="">Todas las razas</option>
-      {races.map((r) => <option value={r.toLowerCase()}>{r}</option>)}
-    </select>
-  </label>
-
-  <a
-    href="/comparador"
-    class="rounded-full bg-[var(--color-accent)] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
+<div class="mb-4 space-y-3">
+  <div
+    class="hex-pills flex flex-wrap gap-2"
+    role="tablist"
+    aria-label="Filtrar personajes por saga"
   >
-    Comparar
-  </a>
-</form>
+    <button
+      type="button"
+      class="hex-pill"
+      data-saga="all"
+      data-active="true"
+      role="tab"
+      aria-selected="true"
+    >
+      <span>Todos</span>
+      <span class="hex-pill-count">{counts.all}</span>
+    </button>
+    {
+      BIG_SAGAS.map((s) => (
+        <button
+          type="button"
+          class="hex-pill"
+          data-saga={s.id}
+          data-active="false"
+          role="tab"
+          aria-selected="false"
+        >
+          <span style={`color: ${s.color}`} aria-hidden="true">●</span>
+          <span>{s.name}</span>
+          <span class="hex-pill-count">{counts[s.id] ?? 0}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <form
+    id="character-filters"
+    class="flex flex-col gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 md:flex-row md:items-center"
+    onsubmit="return false"
+  >
+    <label class="flex-1">
+      <span class="sr-only">Buscar personaje</span>
+      <input
+        type="search"
+        name="q"
+        id="filter-q"
+        placeholder="Buscar personaje..."
+        class="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+      />
+    </label>
+
+    <label>
+      <span class="sr-only">Filtrar por raza</span>
+      <select
+        name="race"
+        id="filter-race"
+        class="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+      >
+        <option value="">Todas las razas</option>
+        {races.map((r) => <option value={r.toLowerCase()}>{r}</option>)}
+      </select>
+    </label>
+
+    <a
+      href="/comparador"
+      class="rounded-full bg-[var(--color-accent)] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[var(--color-accent-hover)]"
+    >
+      Comparar
+    </a>
+  </form>
+</div>
 
 <script is:inline>
   (() => {
     const q = document.getElementById("filter-q");
     const race = document.getElementById("filter-race");
-    const grid = document.getElementById("character-grid");
+    const grid = document.getElementById("character-hex");
     const empty = document.getElementById("empty-state");
+    const pills = document.querySelectorAll("[data-saga]");
     if (!q || !race || !grid) return;
+
+    let currentSaga = "all";
 
     const apply = () => {
       const term = (q.value || "").toLowerCase().trim();
       const r = (race.value || "").toLowerCase().trim();
       let visible = 0;
-      grid.querySelectorAll(".character-card").forEach((el) => {
-        const card = el;
-        const name = card.dataset.name || "";
-        const cardRace = card.dataset.race || "";
-        const ok = (!term || name.includes(term)) && (!r || cardRace === r);
-        card.style.display = ok ? "" : "none";
+      grid.querySelectorAll(".hex-cell").forEach((el) => {
+        const cell = el;
+        const name = (cell.getAttribute("aria-label") || "").toLowerCase().replace("ver perfil de ", "");
+        const cardRace = (cell.dataset.sagas || "");
+        const cardSagas = cardRace.split(",");
+        const sagaMatch = currentSaga === "all" || cardSagas.includes(currentSaga);
+        const ok = sagaMatch && (!term || name.includes(term));
+        cell.setAttribute("data-hidden", ok ? "false" : "true");
         if (ok) visible++;
       });
       if (empty) empty.classList.toggle("hidden", visible !== 0);
     };
+
+    pills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const saga = pill.getAttribute("data-saga") || "all";
+        currentSaga = saga;
+        pills.forEach((p) => {
+          const isActive = p === pill;
+          p.setAttribute("data-active", isActive ? "true" : "false");
+          p.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+        apply();
+      });
+    });
 
     q.addEventListener("input", apply);
     race.addEventListener("change", apply);

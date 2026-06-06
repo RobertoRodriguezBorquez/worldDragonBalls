@@ -225,3 +225,315 @@ body.intro-mode #site-header {
   animation: db-spin-fast 1.2s linear infinite;
   transform-origin: 32px 32px;
 }
+
+/* ================== HONEYCOMB HEX GRID (Budokai Tenkaichi) ================== */
+
+/* Contenedor del grid con fondo oscuro */
+.hex-stage {
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+  border: 4px solid var(--color-ink);
+  box-shadow: 6px 6px 0 var(--color-ink);
+  border-radius: 1rem;
+  position: relative;
+  padding: 1rem 0.75rem;
+  overflow: hidden;
+}
+.hex-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 87, 34, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(30, 111, 217, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ====== SHOWCASE (panel estático arriba) ====== */
+.character-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.character-showcase {
+  --aura: #ff5722;
+  position: relative;
+  border: 4px solid var(--color-ink);
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #0a0a0a;
+  box-shadow: 6px 6px 0 var(--color-ink),
+              0 0 0 2px var(--aura),
+              0 0 30px color-mix(in srgb, var(--aura) 45%, transparent);
+  transition: box-shadow 0.4s, border-color 0.4s;
+}
+.showcase-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 50%,
+    color-mix(in srgb, var(--aura) 35%, transparent) 0%,
+    transparent 65%);
+  opacity: 0.85;
+  transition: background 0.4s, opacity 0.3s;
+}
+.character-showcase.updating .showcase-bg { opacity: 0.4; }
+.showcase-content {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  min-height: 260px;
+}
+@media (max-width: 768px) {
+  .showcase-content {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    min-height: auto;
+    text-align: center;
+  }
+}
+.showcase-image-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.showcase-image-inner {
+  position: relative;
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 28px color-mix(in srgb, var(--aura) 70%, transparent));
+  transition: filter 0.4s, transform 0.3s;
+}
+.character-showcase:hover .showcase-image-inner {
+  transform: scale(1.04);
+  filter: drop-shadow(0 0 45px color-mix(in srgb, var(--aura) 90%, transparent));
+}
+.showcase-image-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.2s, transform 0.3s;
+  display: block;
+}
+.character-showcase.updating .showcase-image-inner img {
+  opacity: 0;
+  transform: scale(0.92);
+}
+.showcase-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-ki-yellow);
+  pointer-events: none;
+}
+.showcase-corner-tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.showcase-corner-tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+.showcase-corner-bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+.showcase-corner-br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+.showcase-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+@media (max-width: 768px) {
+  .showcase-text { align-items: center; }
+}
+.showcase-race {
+  font-family: monospace;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--aura);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.3rem 0.8rem;
+  border: 1.5px solid var(--aura);
+  border-radius: 0.3rem;
+  transition: color 0.4s, border-color 0.4s;
+}
+.showcase-name {
+  font-family: "Bungee Shade", system-ui, sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  text-transform: uppercase;
+  color: white;
+  line-height: 0.95;
+  margin: 0;
+  text-shadow: 3px 3px 0 var(--aura);
+  letter-spacing: 0.02em;
+  transition: text-shadow 0.4s;
+}
+.showcase-ki {
+  font-family: monospace;
+  font-size: 1.1rem;
+  color: var(--color-ki-yellow);
+  margin: 0;
+  font-weight: 700;
+}
+.showcase-affiliation {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.showcase-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  background: var(--aura);
+  color: white;
+  font-family: "Bungee", system-ui, sans-serif;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  border: 2px solid var(--color-ink);
+  box-shadow: 4px 4px 0 var(--color-ink);
+  text-decoration: none;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.4s;
+}
+.showcase-cta:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--color-ink);
+}
+.showcase-cta:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--color-ink);
+}
+
+/* ====== HEXES (más pequeños, close-up) ====== */
+.hex-cell {
+  --aura: #ff5722;
+  width: 100%;
+  aspect-ratio: 0.866;
+  background: transparent;
+  position: relative;
+  transition: filter 0.25s, opacity 0.3s;
+  display: block;
+  z-index: 1;
+  text-decoration: none;
+}
+.hex-cell-shape {
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--aura) 40%, #0a0a0a) 0%, #0a0a0a 100%);
+  transition: filter 0.25s;
+}
+.hex-cell-shape::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--aura) 80%, white 0%);
+  pointer-events: none;
+  z-index: 2;
+}
+.hex-cell-shape img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  transition: transform 0.3s, filter 0.25s;
+  display: block;
+}
+.hex-cell:hover {
+  z-index: 10;
+}
+.hex-cell:hover .hex-cell-shape {
+  filter: drop-shadow(0 0 8px var(--aura)) brightness(1.15);
+}
+.hex-cell:hover .hex-cell-shape img {
+  transform: scale(1.08);
+}
+.hex-cell[data-hidden="true"] {
+  display: none;
+}
+
+/* Filas honeycomb */
+.hex-row {
+  display: grid;
+  grid-template-columns: repeat(var(--hex-cols, 6), minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: -10%;
+  position: relative;
+  z-index: 1;
+}
+.hex-row:last-child { margin-bottom: 0; }
+.hex-row-offset {
+  padding-left: calc((100% / var(--hex-cols, 6)) * 0.5 + 2px);
+  margin-top: 1%;
+}
+
+/* Responsive columns */
+.hex-rows-6 { --hex-cols: 6; }
+.hex-rows-5 { --hex-cols: 5; }
+.hex-rows-4 { --hex-cols: 4; }
+.hex-rows-3 { --hex-cols: 3; }
+.hex-rows-2 { --hex-cols: 2; }
+
+@media (max-width: 1023px) { .hex-rows-6 { --hex-cols: 4; } .hex-rows-5 { --hex-cols: 3; } .hex-rows-4 { --hex-cols: 3; } }
+@media (max-width: 639px)  { .hex-rows-6, .hex-rows-5, .hex-rows-4, .hex-rows-3 { --hex-cols: 3; } }
+
+/* Pills de filtro de saga */
+.hex-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--color-ink);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: "Bungee", system-ui, sans-serif;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  box-shadow: 3px 3px 0 var(--color-ink);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+  border-radius: 0.4rem;
+  white-space: nowrap;
+}
+.hex-pill:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+.hex-pill:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--color-ink);
+}
+.hex-pill[data-active="true"] {
+  background: var(--color-ki-orange);
+  color: white;
+  border-color: var(--color-ink);
+}
+.hex-pill[data-active="true"][data-saga="dragon-ball-z"] { background: var(--color-ki-blue); }
+.hex-pill[data-active="true"][data-saga="dragon-ball-super"] { background: var(--color-ki-purple); color: white; }
+.hex-pill[data-active="true"][data-saga="dragon-ball-gt"] { background: var(--color-ki-red); }
+.hex-pill-count {
+  background: var(--color-ink);
+  color: var(--color-ki-yellow);
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0 0.4rem;
+  border-radius: 0.25rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+.hex-pill[data-active="true"] .hex-pill-count {
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+}

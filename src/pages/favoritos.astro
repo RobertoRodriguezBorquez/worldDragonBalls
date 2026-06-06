@@ -1,7 +1,7 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import { getFeaturedCharacters } from "@lib/api";
-import CharacterCard from "@components/personajes/CharacterCard.astro";
+import { getFeaturedCharacters, getCharacterAura } from "@lib/api";
+import FavoriteButton from "@components/personajes/FavoriteButton.astro";
 
 const all = await getFeaturedCharacters();
 ---
@@ -39,13 +39,47 @@ const all = await getFeaturedCharacters();
       id="favorites-grid"
       class="hidden grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
     >
-      {all.map((c) => (
-        <div data-fav-id={c.id} class="hidden">
-          <CharacterCard character={c} />
-        </div>
-      ))}
+      {all.map((c) => {
+        const aura = getCharacterAura(c);
+        return (
+          <article
+            data-fav-id={c.id}
+            data-fav-card
+            data-aura={aura}
+            style={`--aura: ${aura};`}
+            class="fav-card group hidden flex-col overflow-hidden rounded-2xl border-2 border-[var(--color-ink)] bg-[var(--color-surface)]"
+          >
+            <a href={`/personajes/${c.id}`} class="block">
+              <div
+                class="relative flex aspect-square items-center justify-center p-4"
+                style={`background: linear-gradient(135deg, color-mix(in srgb, ${aura} 30%, #0a0a0a) 0%, #0a0a0a 100%);`}
+              >
+                <img
+                  src={c.image}
+                  alt={c.name}
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  class="h-full w-full object-contain transition group-hover:scale-105"
+                />
+              </div>
+            </a>
+            <div class="flex items-center justify-between gap-2 p-2.5">
+              <a href={`/personajes/${c.id}`} class="flex-1">
+                <h3 class="line-clamp-1 text-sm font-bold text-[var(--color-text)]">
+                  {c.name}
+                </h3>
+                <p class="line-clamp-1 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+                  {c.race}
+                </p>
+              </a>
+              <FavoriteButton id={c.id} name={c.name} compact />
+            </div>
+          </article>
+        );
+      })}
     </div>
   </section>
+</section>
 </Layout>
 
 <script is:inline>
@@ -67,7 +101,7 @@ const all = await getFeaturedCharacters();
       const favs = get();
       const ids = new Set(favs.map((f) => f.id));
       let visible = 0;
-      grid.querySelectorAll("[data-fav-id]").forEach((el) => {
+      grid.querySelectorAll("[data-fav-card]").forEach((el) => {
         const id = Number(el.dataset.favId);
         const show = ids.has(id);
         el.classList.toggle("hidden", !show);

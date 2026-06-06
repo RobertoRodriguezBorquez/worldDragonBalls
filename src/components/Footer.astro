@@ -14,64 +14,166 @@ const navItems = [
 ] as const;
 ---
 
-<footer class="relative mt-12 border-t-[3px] border-[var(--color-ink)] bg-[var(--color-bg-elevated)]">
+<footer class="relative mt-16 border-t-[3px] border-[var(--color-ink)] bg-[var(--color-bg-elevated)]">
   <div
     aria-hidden="true"
-    class="h-1 w-full bg-[repeating-linear-gradient(45deg,var(--color-ki-orange)_0_10px,var(--color-ki-yellow)_10px_20px,var(--color-ki-red)_20px_30px)]"
+    class="h-1.5 w-full bg-[repeating-linear-gradient(45deg,var(--color-ki-orange)_0_10px,var(--color-ki-yellow)_10px_20px,var(--color-ki-red)_20px_30px,var(--color-ki-blue)_30px_40px)]"
   ></div>
 
   <div
-    class="mx-auto flex max-w-7xl flex-col items-center gap-5 px-4 py-6 sm:flex-row sm:justify-between sm:gap-6"
-  >
-    <a
-      href="/"
-      class="flex items-center gap-2 text-sm font-semibold text-[var(--color-text)] transition hover:text-[var(--color-ki-orange)]"
-      aria-label={dict.nav.home}
-    >
-      <img src="/svg/dragonball-z.svg" alt="" class="h-7 w-auto" loading="lazy" aria-hidden="true" />
-      <span class="font-[var(--font-display)] uppercase tracking-wider">
-        World <span class="text-[var(--color-ki-red)]">DB</span>
-      </span>
-    </a>
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-multiply"
+    style="background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>&quot;);"
+  ></div>
 
-    <nav aria-label="Footer" class="flex flex-wrap items-center justify-center gap-1.5">
-      {
-        navItems.map((item) => {
-          const active = item.match(pathname);
-          return (
-            <a
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              class:list={[
-                "rounded-full border-[2px] border-[var(--color-ink)] px-3 py-1 text-xs font-semibold transition-all duration-150",
-                "active:translate-x-[1px] active:translate-y-[1px]",
-                active
-                  ? "bg-[var(--color-ki-orange)] text-[var(--color-ink)] shadow-none"
-                  : "bg-[var(--color-surface)] text-[var(--color-text)] shadow-[2px_2px_0_var(--color-ink)] hover:-translate-y-0.5 hover:bg-[var(--color-ki-yellow)]",
-              ]}
-            >
-              {item.label}
-            </a>
-          );
-        })
-      }
-    </nav>
-
-    <div class="flex flex-col items-center gap-0.5 text-xs text-[var(--color-text-muted)] sm:items-end">
-      <p>
-        © {year} <strong class="text-[var(--color-text)]">World Dragon Balls</strong>
-      </p>
-      <p>
-        {locale === "en" ? "Data:" : "Datos:"}
-        <a
-          href="https://dragonball-api.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="ml-1 font-semibold text-[var(--color-text)] underline decoration-[var(--color-ki-orange)] decoration-2 underline-offset-2 hover:text-[var(--color-ki-orange)]"
+  <div class="relative mx-auto grid max-w-7xl gap-10 px-4 py-10 md:grid-cols-[1.1fr_1fr] md:gap-12 md:py-14">
+    <div class="relative">
+      <div class="flex items-center gap-3">
+        <img
+          src="/svg/dragonball-z.svg"
+          alt="Dragon Ball Z"
+          class="h-12 w-auto drop-shadow-[2px_2px_0_var(--color-ink)]"
+          loading="lazy"
+        />
+        <span
+          class="rounded-md border-[2px] border-[var(--color-ink)] bg-[var(--color-ki-yellow)] px-2 py-0.5 font-[var(--font-display)] text-[10px] uppercase tracking-widest text-[var(--color-ink)] shadow-[2px_2px_0_var(--color-ink)]"
         >
-          dragonball-api.com
-        </a>
+          Vol. 01
+        </span>
+      </div>
+
+      <h2
+        class="mt-5 font-[var(--font-display)] text-2xl uppercase leading-tight tracking-wide text-[var(--color-text)] sm:text-3xl"
+      >
+        World <span class="text-[var(--color-ki-red)]">Dragon Balls</span>
+      </h2>
+
+      <p class="mt-3 max-w-md text-sm leading-relaxed text-[var(--color-text-muted)]">
+        {dict.site.description}
       </p>
+
+      <div
+        class="absolute -top-2 right-0 hidden -rotate-12 select-none sm:block"
+        aria-hidden="true"
+      >
+        <div
+          class="rounded-md border-[2.5px] border-dashed border-[var(--color-ki-red)] bg-[var(--color-bg-elevated)] px-3 py-1.5 text-center"
+          style="box-shadow: 2px 2px 0 var(--color-ki-red);"
+        >
+          <span class="block font-[var(--font-display)] text-[10px] uppercase leading-none tracking-widest text-[var(--color-ki-red)]">
+            Fan
+          </span>
+          <span class="block font-[var(--font-display)] text-[10px] uppercase leading-none tracking-widest text-[var(--color-ki-red)]">
+            Project
+          </span>
+        </div>
+      </div>
     </div>
+
+    <div class="flex flex-col gap-8">
+      <div>
+        <h3
+          class="mb-3 inline-block rounded-md border-[2px] border-[var(--color-ink)] bg-[var(--color-surface)] px-2 py-0.5 font-[var(--font-display)] text-[11px] uppercase tracking-widest text-[var(--color-text)] shadow-[2px_2px_0_var(--color-ink)]"
+        >
+          {locale === "en" ? "Chapters" : "Capítulos"}
+        </h3>
+        <nav aria-label="Footer" class="flex flex-wrap gap-2">
+          {
+            navItems.map((item) => {
+              const active = item.match(pathname);
+              return (
+                <a
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  class:list={[
+                    "inline-flex items-center rounded-full border-[2.5px] border-[var(--color-ink)] px-3.5 py-1.5 text-sm font-semibold transition-all duration-150",
+                    "active:translate-x-[2px] active:translate-y-[2px]",
+                    active
+                      ? "bg-[var(--color-ki-orange)] text-[var(--color-ink)] shadow-none"
+                      : "bg-[var(--color-surface)] text-[var(--color-text)] shadow-[2px_2px_0_var(--color-ink)] hover:-translate-y-0.5 hover:bg-[var(--color-ki-yellow)] hover:shadow-[3px_3px_0_var(--color-ink)]",
+                  ]}
+                >
+                  {item.label}
+                </a>
+              );
+            })
+          }
+        </nav>
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <h3
+            class="mb-2 font-[var(--font-display)] text-[11px] uppercase tracking-widest text-[var(--color-text-muted)]"
+          >
+            {locale === "en" ? "Data source" : "Fuente de datos"}
+          </h3>
+          <a
+            href="https://dragonball-api.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--color-text)] underline decoration-[var(--color-ki-orange)] decoration-2 underline-offset-4 transition hover:text-[var(--color-ki-orange)]"
+          >
+            dragonball-api.com
+            <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M7 17 17 7" />
+              <path d="M8 7h9v9" />
+            </svg>
+          </a>
+        </div>
+        <div>
+          <h3
+            class="mb-2 font-[var(--font-display)] text-[11px] uppercase tracking-widest text-[var(--color-text-muted)]"
+          >
+            {locale === "en" ? "Disclaimer" : "Aviso"}
+          </h3>
+          <p class="text-xs leading-relaxed text-[var(--color-text-muted)]">
+            {locale === "en"
+              ? "Unofficial fan project. All Dragon Ball trademarks belong to their respective owners."
+              : "Proyecto fan no oficial. Todas las marcas de Dragon Ball pertenecen a sus respectivos dueños."}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    aria-hidden="true"
+    class="relative h-16 overflow-hidden border-y-[3px] border-[var(--color-ink)] bg-[var(--color-ink)] sm:h-20"
+  >
+    <div
+      class="absolute inset-0 opacity-[0.18]"
+      style="background-image:radial-gradient(circle at 1px 1px, var(--color-ki-yellow) 1.2px, transparent 0);background-size:18px 18px;"
+    ></div>
+    <div
+      class="absolute inset-0 flex items-center justify-center whitespace-nowrap font-[var(--font-display)] text-[18px] leading-none uppercase tracking-[0.3em] text-[var(--color-bg-elevated)] sm:text-[22px]"
+      style="word-spacing:0.4em;"
+      aria-hidden="true"
+    >
+      End&nbsp;of&nbsp;Chapter · End&nbsp;of&nbsp;Chapter · End&nbsp;of&nbsp;Chapter
+    </div>
+  </div>
+
+  <div class="relative mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-xs text-[var(--color-text-muted)] sm:flex-row">
+    <div class="flex items-center gap-2">
+      <svg viewBox="0 0 32 32" class="h-5 w-5" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="var(--color-ki-orange)" stroke="var(--color-ki-red)" stroke-width="1.4" />
+        <g fill="var(--color-ki-red)">
+          <polygon points="16,7 17.2,9.5 20,9.7 17.9,11.5 18.6,14.1 16,12.7 13.4,14.1 14.1,11.5 12,9.7 14.8,9.5" />
+          <polygon points="9,19 9.7,20.5 11.3,20.6 10.1,21.6 10.5,23.1 9,22.3 7.5,23.1 7.9,21.6 6.7,20.6 8.3,20.5" />
+          <polygon points="23,19 23.7,20.5 25.3,20.6 24.1,21.6 24.5,23.1 23,22.3 21.5,23.1 21.9,21.6 20.7,20.6 22.3,20.5" />
+          <polygon points="16,22 16.7,23.5 18.3,23.6 17.1,24.6 17.5,26.1 16,25.3 14.5,26.1 14.9,24.6 13.7,23.6 15.3,23.5" />
+        </g>
+      </svg>
+      <span>
+        © {year}
+        <strong class="text-[var(--color-text)]">World Dragon Balls</strong>
+      </span>
+    </div>
+    <p class="text-center sm:text-right">
+      {locale === "en" ? "Made with" : "Hecho con"}
+      <span class="text-[var(--color-ki-red)]">♥</span>
+      {locale === "en" ? "by fans, for fans." : "por fans, para fans."}
+    </p>
   </div>
 </footer>

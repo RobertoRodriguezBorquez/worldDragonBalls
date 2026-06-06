@@ -1,6 +1,6 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import CharacterGrid from "@components/personajes/CharacterGrid.astro";
+import CharacterHexGrid from "@components/personajes/CharacterHexGrid.astro";
 import CharacterFilters from "@components/personajes/CharacterFilters.astro";
 import { getFeaturedCharacters } from "@lib/api";
 
@@ -22,7 +22,7 @@ const races = [...new Set(characters.map((c) => c.race).filter(Boolean))].sort()
       </p>
     </header>
 
-    <CharacterFilters races={races} />
-    <CharacterGrid characters={characters} />
+    <CharacterFilters races={races} characters={characters} />
+    <CharacterHexGrid characters={characters} id="character-hex" showcase={true} />
   </section>
 </Layout>

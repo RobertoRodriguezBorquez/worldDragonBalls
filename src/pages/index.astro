@@ -5,9 +5,11 @@ import Bienvenida from "@components/Bienvenida.astro";
 import CharacterSelect from "@components/personajes/CharacterSelect.astro";
 import VersusMode from "@components/VersusMode.astro";
 import Sagas from "@components/Sagas.astro";
-import { getFeaturedCharacters, parseKi } from "@lib/api";
+import { getFeaturedCharacters, parseKi, SAGAS } from "@lib/api";
 
-const featured = (await getFeaturedCharacters()).slice(0, 16);
+const allCharacters = await getFeaturedCharacters();
+const featured = allCharacters.slice(0, 16);
+const raceCount = new Set(allCharacters.map((c) => c.race).filter(Boolean)).size;
 
 const sortedByKi = [...featured].sort((a, b) => {
   const ka = parseKi(a.maxKi) || parseKi(a.ki);
@@ -31,7 +33,11 @@ const top2 = sortedByKi[1] ?? featured[1] ?? featured[0];
     aria-hidden="true"
     inert
   >
-    <Bienvenida />
+    <Bienvenida
+      characterCount={allCharacters.length}
+      sagaCount={SAGAS.length}
+      raceCount={raceCount}
+    />
 
     <section id="destacados" class="mx-auto max-w-7xl px-4">
       <CharacterSelect characters={featured} />

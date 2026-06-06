@@ -149,6 +149,90 @@ export function characterInSaga(character: Pick<Character, "id" | "affiliation">
   return getCharacterSagas(character).includes(saga);
 }
 
+/**
+ * 4 sagas grandes (usadas para filtro de catálogo, pills en home, etc.)
+ * Distintas de STORY_ARCS (8 arcos narrativos curados).
+ */
+export const BIG_SAGAS = [
+  { id: "dragon-ball", name: "Dragon Ball", short: "DB", color: "#ff5722" },
+  { id: "dragon-ball-z", name: "Dragon Ball Z", short: "DBZ", color: "#1e6fd9" },
+  { id: "dragon-ball-super", name: "Dragon Ball Super", short: "DBS", color: "#9c27b0" },
+  { id: "dragon-ball-gt", name: "Dragon Ball GT", short: "DBGT", color: "#e53935" },
+] as const;
+
+export type BigSaga = (typeof BIG_SAGAS)[number]["id"];
+
+const ARC_TO_BIG: Record<Exclude<SagaId, "all">, BigSaga> = {
+  original: "dragon-ball",
+  saiyan: "dragon-ball-z",
+  frieza: "dragon-ball-z",
+  cell: "dragon-ball-z",
+  buu: "dragon-ball-z",
+  god: "dragon-ball-super",
+  tournament: "dragon-ball-super",
+  other: "dragon-ball-gt",
+};
+
+const BIG_OVERRIDES: Record<number, BigSaga[]> = {
+  1: ["dragon-ball", "dragon-ball-z", "dragon-ball-super", "dragon-ball-gt"],
+  2: ["dragon-ball-z", "dragon-ball-super"],
+  4: ["dragon-ball"],
+  11: ["dragon-ball", "dragon-ball-z"],
+  14: ["dragon-ball"],
+  17: ["dragon-ball", "dragon-ball-z", "dragon-ball-super"],
+  19: ["dragon-ball"],
+  20: ["dragon-ball-z", "dragon-ball-super"],
+};
+
+export function getBigSagas(character: Pick<Character, "id" | "affiliation">): BigSaga[] {
+  const override = BIG_OVERRIDES[character.id];
+  if (override) return override;
+  const arcs = getCharacterSagas(character).filter((a): a is Exclude<SagaId, "all"> => a !== "all");
+  return [...new Set(arcs.map((a) => ARC_TO_BIG[a]))];
+}
+
+export function getBigSagasCount(characters: Pick<Character, "id" | "affiliation">[]): Record<BigSaga | "all", number> {
+  const counts: Record<string, number> = { all: characters.length };
+  for (const c of characters) {
+    for (const s of getBigSagas(c)) {
+      counts[s] = (counts[s] ?? 0) + 1;
+    }
+  }
+  return counts as Record<BigSaga | "all", number>;
+}
+
+/**
+ * Shuffle (Fisher-Yates) y devuelve los primeros N elementos.
+ * Usado en el home para mostrar un roster aleatorio.
+ */
+export function getRandomCharacters<T>(arr: readonly T[], n: number): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, Math.min(n, copy.length));
+}
+
+/**
+ * Aura color por raza. Usado para el background del hex.
+ * Saiyan = naranja, Frieza = púrpura, Namekian = verde, etc.
+ */
+export function getCharacterAura(c: Pick<Character, "race">): string {
+  const race = (c.race || "").toLowerCase();
+  if (race.includes("saiyan")) return "#ff8c1a";
+  if (race.includes("frieza")) return "#a855f7";
+  if (race.includes("namekian") || race.includes("namek")) return "#10b981";
+  if (race.includes("human")) return "#3b82f6";
+  if (race.includes("android")) return "#06b6d4";
+  if (race.includes("majin")) return "#ec4899";
+  if (race.includes("demon")) return "#dc2626";
+  if (race.includes("angel")) return "#60a5fa";
+  if (race.includes("god")) return "#fbbf24";
+  if (race.includes("jiren") || race.includes("unknown") || race.includes("nucleico") || race.includes("evolving")) return "#6366f1";
+  return "#ff5722";
+}
+
 async function safeFetch<T>(url: string, fallback: T): Promise<T> {
   try {
     const res = await fetch(url, {

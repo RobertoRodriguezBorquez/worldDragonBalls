@@ -1,0 +1,188 @@
+---
+import type { CharacterFull } from "@lib/api";
+import { getBigSagas, getCharacterAura } from "@lib/api";
+
+interface Props {
+  characters: CharacterFull[];
+  id?: string;
+  randomLimit?: number;
+  showcase?: boolean;
+}
+const {
+  characters,
+  id = "character-hex",
+  randomLimit,
+  showcase = false,
+} = Astro.props;
+
+const rows: CharacterFull[][] = [];
+for (let i = 0; i < characters.length; i += 6) {
+  const row = characters.slice(i, i + 6);
+  if (row.length > 0) rows.push(row);
+}
+const hexRows = rows;
+
+const firstChar = characters[0];
+const firstAura = firstChar ? getCharacterAura(firstChar) : "#ff5722";
+---
+
+<div class="character-roster" data-id={id}>
+  {
+    showcase && firstChar && (
+      <div
+        class="character-showcase"
+        id={`${id}-showcase`}
+        style={`--aura: ${firstAura};`}
+      >
+        <div class="showcase-bg" aria-hidden="true"></div>
+        <div class="showcase-content">
+          <div class="showcase-image-frame">
+            <div class="showcase-image-inner">
+              <img
+                id={`${id}-showcase-img`}
+                src={firstChar.image}
+                alt={firstChar.name}
+                loading="eager"
+                referrerpolicy="no-referrer"
+              />
+            </div>
+            <div class="showcase-corner showcase-corner-tl" aria-hidden="true"></div>
+            <div class="showcase-corner showcase-corner-tr" aria-hidden="true"></div>
+            <div class="showcase-corner showcase-corner-bl" aria-hidden="true"></div>
+            <div class="showcase-corner showcase-corner-br" aria-hidden="true"></div>
+          </div>
+          <div class="showcase-text">
+            <span class="showcase-race" id={`${id}-showcase-race`}>
+              {firstChar.race}
+            </span>
+            <h2 class="showcase-name" id={`${id}-showcase-name`}>
+              {firstChar.name}
+            </h2>
+            <p class="showcase-ki" id={`${id}-showcase-ki`}>
+              <span aria-hidden="true">⚡</span> {firstChar.ki}
+            </p>
+            <p class="showcase-affiliation" id={`${id}-showcase-affiliation`}>
+              {firstChar.affiliation}
+            </p>
+            <a
+              href={`/personajes/${firstChar.id}`}
+              class="showcase-cta"
+              id={`${id}-showcase-cta`}
+            >
+              <span aria-hidden="true">▶</span>
+              <span>Select</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  <div
+    id={id}
+    class="hex-stage hex-rows-6"
+    data-random-limit={randomLimit ?? ""}
+  >
+    {
+      hexRows.map((row, rowIdx) => (
+        <div class:list={["hex-row", rowIdx % 2 === 0 && "hex-row-offset"]}>
+          {row.map((c) => {
+            const aura = getCharacterAura(c);
+            const sagas = getBigSagas(c);
+            return (
+              <a
+                href={`/personajes/${c.id}`}
+                class="hex-cell"
+                data-id={c.id}
+                data-name={c.name}
+                data-race={c.race}
+                data-affiliation={c.affiliation}
+                data-ki={c.ki}
+                data-image={c.image}
+                data-aura={aura}
+                data-sagas={sagas.join(",")}
+                style={`--aura: ${aura};`}
+                aria-label={`Ver perfil de ${c.name}`}
+              >
+                <div class="hex-cell-shape">
+                  <img
+                    src={c.image}
+                    alt={c.name}
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                  />
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script is:inline define:vars={{ gridId: id, limit: randomLimit, hasShowcase: showcase }}>
+  (() => {
+    const root = document.querySelector(`.character-roster[data-id="${gridId}"]`);
+    if (!root) return;
+    const grid = root.querySelector(`#${gridId}`);
+    if (!grid) return;
+    const cells = Array.from(grid.querySelectorAll(".hex-cell"));
+
+    if (limit && cells.length > limit) {
+      const shuffle = () => {
+        cells.forEach((c) => c.setAttribute("data-hidden", "true"));
+        const copy = [...cells];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        copy.slice(0, limit).forEach((c) => c.setAttribute("data-hidden", "false"));
+      };
+      shuffle();
+      window.addEventListener("pageshow", (e) => {
+        if (e.persisted) shuffle();
+      });
+    }
+
+    if (!hasShowcase) return;
+
+    const showcase = root.querySelector(`#${gridId}-showcase`);
+    if (!showcase) return;
+    const img = root.querySelector(`#${gridId}-showcase-img`);
+    const name = root.querySelector(`#${gridId}-showcase-name`);
+    const race = root.querySelector(`#${gridId}-showcase-race`);
+    const ki = root.querySelector(`#${gridId}-showcase-ki`);
+    const aff = root.querySelector(`#${gridId}-showcase-affiliation`);
+    const cta = root.querySelector(`#${gridId}-showcase-cta`);
+
+    const update = (cell) => {
+      showcase.classList.add("updating");
+      window.setTimeout(() => {
+        const data = {
+          id: cell.dataset.id,
+          name: cell.dataset.name,
+          race: cell.dataset.race,
+          ki: cell.dataset.ki,
+          aff: cell.dataset.affiliation,
+          image: cell.dataset.image,
+          aura: cell.dataset.aura,
+        };
+        if (img) { img.src = data.image; img.alt = data.name; }
+        if (name) name.textContent = data.name;
+        if (race) race.textContent = data.race;
+        if (ki) ki.innerHTML = "<span>⚡</span> " + data.ki;
+        if (aff) aff.textContent = data.aff;
+        if (cta) cta.href = "/personajes/" + data.id;
+        showcase.style.setProperty("--aura", data.aura);
+        showcase.classList.remove("updating");
+      }, 140);
+    };
+
+    cells.forEach((cell) => {
+      cell.addEventListener("mouseenter", () => update(cell));
+      cell.addEventListener("focus", () => update(cell));
+      cell.addEventListener("touchstart", () => update(cell), { passive: true });
+    });
+  })();
+</script>

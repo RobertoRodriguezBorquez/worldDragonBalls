@@ -1,4 +1,8 @@
 ---
+import { getLocaleFromUrl, getDictionary } from "@lib/i18n";
+
+const locale = getLocaleFromUrl(Astro.url);
+const dict = getDictionary(locale);
 ---
 <section
   id="hero-video"
@@ -10,7 +14,7 @@
     role="status"
     aria-live="polite"
   >
-    <div class="db-spin-fast" aria-hidden="true">
+    <div class="db-spin" aria-hidden="true">
       <svg viewBox="0 0 64 64" class="h-20 w-20">
         <circle cx="32" cy="32" r="28" fill="var(--color-ki-yellow-soft)" stroke="var(--color-ki-orange)" stroke-width="3" />
         <g fill="var(--color-ki-red)">
@@ -22,8 +26,11 @@
       </svg>
     </div>
 
-    <p class="mt-5 font-display text-sm uppercase tracking-[0.35em] text-[var(--color-text)] arcade-blink md:text-base">
-      Insert Coin
+    <p
+      data-i18n="intro.loading"
+      class="mt-5 font-[var(--font-display)] text-sm uppercase tracking-[0.25em] text-[var(--color-text)] md:text-base"
+    >
+      {dict.intro.loading}
     </p>
 
     <div class="mt-4 h-2 w-56 overflow-hidden rounded-full border-2 border-[var(--color-ink)] bg-[var(--color-ink)]/30">
@@ -40,8 +47,11 @@
       <span id="loader-percent">0%</span>
     </p>
 
-    <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--color-text-muted)]">
-      Loading Game…
+    <p
+      data-i18n="intro.preparing"
+      class="mt-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--color-text-muted)]"
+    >
+      {dict.intro.preparing}
     </p>
   </div>
 
@@ -53,7 +63,7 @@
     playsinline
     preload="auto"
     poster="/presentacion/nube-fondo.png"
-    aria-label="Video de presentación de Dragon Ball"
+    aria-label={dict.intro.loading}
   >
     <source src="/presentacion/video.mp4" type="video/mp4" />
   </video>
@@ -74,17 +84,17 @@
       id="hero-mute"
       class="btn-arcade-ghost pointer-events-auto !border-white/40 !text-white !shadow-[2px_2px_0_rgba(255,193,7,0.6)] hover:!bg-[var(--color-ki-yellow)] hover:!text-[var(--color-ink)]"
       style="font-size: 0.7rem; padding: 0.45rem 0.9rem;"
-      aria-label="Silenciar video"
+      aria-label={dict.intro.mute}
     >
       <span id="hero-mute-icon" aria-hidden="true">🔇</span>
-      <span id="hero-mute-label">Sound Off</span>
+      <span data-i18n="intro.mute" id="hero-mute-label">{dict.intro.mute}</span>
     </button>
 
     <div
       id="hero-progress"
       class="pointer-events-none flex items-center gap-2 rounded-full border-2 border-[var(--color-ki-yellow)] bg-black/60 px-2 py-1.5 text-white backdrop-blur"
       style="box-shadow: 2px 2px 0 rgba(255,193,7,0.6);"
-      aria-label="Tiempo restante del video"
+      aria-label={dict.intro.time}
     >
       <div class="relative h-9 w-9">
         <svg viewBox="0 0 36 36" class="absolute inset-0 h-full w-full -rotate-90">
@@ -111,13 +121,16 @@
           />
         </svg>
         <div class="absolute inset-0 flex items-center justify-center">
-          <span id="hero-progress-time" class="font-display text-[10px] tabular-nums text-[var(--color-ki-yellow)]">
+          <span id="hero-progress-time" class="font-[var(--font-display)] text-[10px] tabular-nums text-[var(--color-ki-yellow)]">
             0:00
           </span>
         </div>
       </div>
-      <span class="pr-1 font-display text-[9px] uppercase tracking-wider opacity-90">
-        Time Left
+      <span
+        data-i18n="intro.time"
+        class="pr-1 font-[var(--font-display)] text-[9px] uppercase tracking-wider opacity-90"
+      >
+        {dict.intro.time}
       </span>
     </div>
 
@@ -128,10 +141,19 @@
       style="font-size: 0.7rem; padding: 0.45rem 0.9rem;"
     >
       <span aria-hidden="true">⤵</span>
-      <span>Skip Intro</span>
+      <span data-i18n="intro.skip">{dict.intro.skip}</span>
     </button>
   </div>
 </section>
+
+<style>
+  @keyframes db-spin-kf {
+    to { transform: rotate(360deg); }
+  }
+  .db-spin {
+    animation: db-spin-kf 2.4s linear infinite;
+  }
+</style>
 
 <script is:inline>
   (() => {
@@ -219,11 +241,15 @@
 
     video.addEventListener("error", () => {
       if (!loader) return;
+      const errMsg = muteLabel?.getAttribute("data-i18n-error")
+        || (location.pathname.startsWith("/en") ? "Could not load the video" : "No se pudo cargar el video");
+      const contMsg = muteLabel?.getAttribute("data-i18n-continue")
+        || (location.pathname.startsWith("/en") ? "Continue" : "Continuar");
       loader.innerHTML = `
         <div class="text-center px-6">
           <p class="text-4xl">⚠️</p>
-          <p class="mt-3 font-display text-sm uppercase tracking-wider text-[var(--color-text)]">No se pudo cargar el video</p>
-          <button id="loader-skip" class="btn-arcade mt-4 text-xs">Continuar</button>
+          <p class="mt-3 font-[var(--font-display)] text-sm uppercase tracking-wider text-[var(--color-text)]">${errMsg}</p>
+          <button id="loader-skip" class="btn-arcade mt-4 text-xs">${contMsg}</button>
         </div>
       `;
       const fallbackSkip = document.getElementById("loader-skip");
@@ -265,11 +291,20 @@
     if (mute && muteIcon && muteLabel) {
       mute.addEventListener("click", () => {
         video.muted = !video.muted;
-        muteIcon.textContent = video.muted ? "🔇" : "🔊";
-        muteLabel.textContent = video.muted ? "Sound Off" : "Sound On";
+        const on = !video.muted;
+        muteIcon.textContent = on ? "🔊" : "🔇";
+        const dicts = {
+          es: { mute: "Silenciar", unmute: "Activar sonido" },
+          en: { mute: "Mute", unmute: "Unmute" },
+        };
+        const isEn = location.pathname.startsWith("/en");
+        muteLabel.textContent = on ? dicts.en.unmute : dicts.en.mute;
+        muteLabel.textContent = on
+          ? (isEn ? dicts.en.unmute : dicts.es.unmute)
+          : (isEn ? dicts.en.mute : dicts.es.mute);
         mute.setAttribute(
           "aria-label",
-          video.muted ? "Activar sonido" : "Silenciar video"
+          on ? (isEn ? "Unmute" : "Activar sonido") : (isEn ? "Mute" : "Silenciar")
         );
       });
     }

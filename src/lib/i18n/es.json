@@ -10,9 +10,17 @@
     "compare": "Comparador"
   },
   "home": {
-    "hero": {
-      "title": "Bienvenido al mundo Dragon Ball",
-      "subtitle": "Explora a tus personajes favoritos, descubre sus transformaciones y compara su poder."
+    "welcome": {
+      "kicker": "Archivo de personajes",
+      "title": "Archivo de Guerreros Z",
+      "subtitle": "Personajes · Sagas · Poder",
+      "description": "Consulta fichas, niveles de Ki, transformaciones y compara el poder de los personajes del universo Dragon Ball.",
+      "statCharacters": "Personajes",
+      "statSagas": "Sagas",
+      "statRaces": "Razas",
+      "ctaBrowse": "Explorar personajes",
+      "ctaCompare": "Comparar poder",
+      "tagline": "Base de datos hecha por fans, para fans"
     },
     "timeline": {
       "title": "Línea de tiempo de las sagas",
@@ -62,5 +70,15 @@
     "toggleTheme": "Cambiar tema",
     "language": "Idioma",
     "menu": "Menú"
+  },
+  "intro": {
+    "loading": "Cargando personajes",
+    "preparing": "Preparando el archivo",
+    "skip": "Saltar",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "time": "Tiempo",
+    "error": "No se pudo cargar el video",
+    "continue": "Continuar"
   }
 }

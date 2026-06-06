@@ -10,9 +10,17 @@
     "compare": "Compare"
   },
   "home": {
-    "hero": {
-      "title": "Welcome to the Dragon Ball world",
-      "subtitle": "Explore your favorite characters, discover their transformations and compare their power."
+    "welcome": {
+      "kicker": "Character archive",
+      "title": "Z-Fighter Archive",
+      "subtitle": "Characters · Sagas · Power",
+      "description": "Browse profiles, Ki levels, transformations and compare the power of Dragon Ball universe characters.",
+      "statCharacters": "Characters",
+      "statSagas": "Sagas",
+      "statRaces": "Races",
+      "ctaBrowse": "Browse characters",
+      "ctaCompare": "Compare power",
+      "tagline": "A fan-made database, for fans"
     },
     "timeline": {
       "title": "Saga timeline",
@@ -62,5 +70,15 @@
     "toggleTheme": "Toggle theme",
     "language": "Language",
     "menu": "Menu"
+  },
+  "intro": {
+    "loading": "Loading characters",
+    "preparing": "Preparing the archive",
+    "skip": "Skip",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "time": "Time",
+    "error": "Could not load the video",
+    "continue": "Continue"
   }
 }
