@@ -1,12 +1,13 @@
 ---
 import type { Character } from "@lib/api";
-import { BIG_SAGAS, getBigSagasCount } from "@lib/api";
+import { BIG_SAGAS, getBigSagasCount, type BigSaga } from "@lib/api";
 
 interface Props {
   races: string[];
   characters: Pick<Character, "id" | "affiliation">[];
+  activeSaga?: BigSaga | "all";
 }
-const { races, characters } = Astro.props;
+const { races, characters, activeSaga = "all" } = Astro.props;
 const counts = getBigSagasCount(characters);
 ---
 
@@ -20,9 +21,9 @@ const counts = getBigSagasCount(characters);
       type="button"
       class="hex-pill"
       data-saga="all"
-      data-active="true"
+      data-active={activeSaga === "all" ? "true" : "false"}
       role="tab"
-      aria-selected="true"
+      aria-selected={activeSaga === "all" ? "true" : "false"}
     >
       <span>Todos</span>
       <span class="hex-pill-count">{counts.all}</span>
@@ -33,9 +34,9 @@ const counts = getBigSagasCount(characters);
           type="button"
           class="hex-pill"
           data-saga={s.id}
-          data-active="false"
+          data-active={activeSaga === s.id ? "true" : "false"}
           role="tab"
-          aria-selected="false"
+          aria-selected={activeSaga === s.id ? "true" : "false"}
         >
           <span style={`color: ${s.color}`} aria-hidden="true">●</span>
           <span>{s.name}</span>
@@ -93,6 +94,22 @@ const counts = getBigSagasCount(characters);
 
     let currentSaga = "all";
 
+    const urlSaga = new URLSearchParams(location.search).get("saga");
+    if (urlSaga) {
+      const match = Array.from(pills).find(
+        (p) => p.getAttribute("data-saga") === urlSaga
+      );
+      if (match) {
+        currentSaga = urlSaga;
+        pills.forEach((p) => {
+          const isActive = p === match;
+          p.setAttribute("data-active", isActive ? "true" : "false");
+          p.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+        apply();
+      }
+    }
+
     const apply = () => {
       const term = (q.value || "").toLowerCase().trim();
       const r = (race.value || "").toLowerCase().trim();
@@ -100,10 +117,10 @@ const counts = getBigSagasCount(characters);
       grid.querySelectorAll(".hex-cell").forEach((el) => {
         const cell = el;
         const name = (cell.getAttribute("aria-label") || "").toLowerCase().replace("ver perfil de ", "");
-        const cardRace = (cell.dataset.sagas || "");
-        const cardSagas = cardRace.split(",");
+        const cardSagas = (cell.getAttribute("data-sagas") || "").split(",");
         const sagaMatch = currentSaga === "all" || cardSagas.includes(currentSaga);
-        const ok = sagaMatch && (!term || name.includes(term));
+        const raceMatch = !r || (cell.getAttribute("data-race") || "").toLowerCase() === r;
+        const ok = sagaMatch && raceMatch && (!term || name.includes(term));
         cell.setAttribute("data-hidden", ok ? "false" : "true");
         if (ok) visible++;
       });
@@ -119,6 +136,12 @@ const counts = getBigSagasCount(characters);
           p.setAttribute("data-active", isActive ? "true" : "false");
           p.setAttribute("aria-selected", isActive ? "true" : "false");
         });
+        const params = new URLSearchParams(location.search);
+        if (saga === "all") params.delete("saga");
+        else params.set("saga", saga);
+        const qs = params.toString();
+        const newUrl = location.pathname + (qs ? "?" + qs : "");
+        history.replaceState(null, "", newUrl);
         apply();
       });
     });

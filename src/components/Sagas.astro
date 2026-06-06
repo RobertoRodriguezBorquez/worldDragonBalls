@@ -1,114 +1,251 @@
 ---
-const sagas = [
-  {
-    id: "dragon-ball",
-    name: "Dragon Ball",
+import {
+  getBigSagas,
+  getBigSagasCount,
+  BIG_SAGAS,
+  type BigSaga,
+  type CharacterFull,
+} from "@lib/api";
+
+interface Props {
+  characters: CharacterFull[];
+}
+const { characters } = Astro.props;
+const counts = getBigSagasCount(characters);
+
+const SAGA_META: Record<
+  BigSaga,
+  { year: string; icon: string; desc: string; badge?: string }
+> = {
+  "dragon-ball": {
     year: "1986",
     icon: "🐉",
-    color: "from-orange-500 to-amber-500",
-    borderColor: "border-orange-500",
-    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-orange-500/10 group-hover:to-amber-500/10",
-    desc: "Original adventures with Goku, Bulma y Krillin.",
-    count: "20+ fighters",
+    desc: "Las aventuras originales de Goku, Bulma y Krilin en busca de las Dragon Balls.",
   },
-  {
-    id: "dragon-ball-z",
-    name: "Dragon Ball Z",
+  "dragon-ball-z": {
     year: "1989",
     icon: "⚡",
-    color: "from-blue-600 to-cyan-500",
-    borderColor: "border-blue-600",
-    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-blue-600/10 group-hover:to-cyan-500/10",
-    desc: "Saiyan saga, Frieza, Cell y Buu. La era dorada.",
-    count: "50+ fighters",
+    desc: "Saiyan, Namek, Cell y Buu. La era dorada del anime.",
     badge: "POPULAR",
   },
-  {
-    id: "dragon-ball-super",
-    name: "Dragon Ball Super",
+  "dragon-ball-super": {
     year: "2015",
     icon: "✨",
-    color: "from-violet-600 to-fuchsia-500",
-    borderColor: "border-violet-600",
-    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-violet-600/10 group-hover:to-fuchsia-500/10",
-    desc: "Dios, Blue, Ultra Instinto. Los nuevos poderes.",
-    count: "30+ fighters",
+    desc: "Dios, Blue, Ultra Instinto. Los nuevos poderes del universo.",
     badge: "NEW",
   },
-  {
-    id: "dragon-ball-gt",
-    name: "Dragon Ball GT",
+  "dragon-ball-gt": {
     year: "1996",
     icon: "🌌",
-    color: "from-rose-500 to-red-600",
-    borderColor: "border-rose-500",
-    hoverBg: "group-hover:bg-gradient-to-r group-hover:from-rose-500/10 group-hover:to-red-600/10",
     desc: "Más allá de Z. Super Saiyan 4 y las Dragon Balls oscuras.",
-    count: "20+ fighters",
   },
-];
+};
+
+const SAGA_COLORS: Record<BigSaga, { from: string; to: string; pill: string }> = {
+  "dragon-ball": { from: "#ff5722", to: "#ff9800", pill: "var(--color-ki-orange)" },
+  "dragon-ball-z": { from: "#1e6fd9", to: "#22d3ee", pill: "var(--color-ki-blue)" },
+  "dragon-ball-super": { from: "#7c3aed", to: "#d946ef", pill: "var(--color-ki-purple)" },
+  "dragon-ball-gt": { from: "#e53935", to: "#fb7185", pill: "var(--color-ki-red)" },
+};
+
+const representative = (saga: BigSaga) => {
+  const candidates = characters.filter((c) => getBigSagas(c).includes(saga));
+  if (candidates.length === 0) return null;
+  const scored = candidates.map((c) => ({
+    c,
+    score: getBigSagas(c).length,
+  }));
+  scored.sort((a, b) => a.score - b.score);
+  return scored[0]?.c ?? null;
+};
 ---
 
 <section id="sagas" class="mx-auto max-w-7xl px-4 py-6 pb-12">
-  <div class="mb-5">
+  <div class="mb-5 flex items-end justify-between gap-3">
     <div class="section-banner">
       <span aria-hidden="true">🐉</span>
       <span>Explore by Saga</span>
     </div>
+    <span
+      class="hidden font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] md:inline"
+    >
+      4 sagas · {characters.length} fighters
+    </span>
   </div>
 
-  <div class="space-y-3">
+  <div class="grid gap-3 sm:grid-cols-2">
     {
-      sagas.map((s) => (
-        <a
-          href={`/personajes?saga=${s.id}`}
-          class={`group flex items-center gap-4 overflow-hidden rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-surface)] p-3 transition hover:-translate-y-0.5 hover:shadow-md md:gap-5 md:p-4 ${s.hoverBg}`}
-          style="box-shadow: 4px 4px 0 var(--color-ink);"
-          aria-label={`Ver personajes de ${s.name}`}
-        >
-          <div
-            class={`grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-gradient-to-br text-2xl text-white md:h-16 md:w-16 ${s.color}`}
+      BIG_SAGAS.map((s) => {
+        const meta = SAGA_META[s.id];
+        const palette = SAGA_COLORS[s.id];
+        const rep = representative(s.id);
+        const bg = rep?.image;
+        const count = counts[s.id] ?? 0;
+        const style = `--saga-from:${palette.from};--saga-to:${palette.to};`;
+        return (
+          <a
+            href={`/personajes?saga=${s.id}`}
+            class="saga-card group relative block overflow-hidden rounded-2xl border-[3px] border-[var(--color-ink)] bg-[var(--color-surface)] shadow-[4px_4px_0_var(--color-ink)] transition-all duration-200 hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[6px_6px_0_var(--color-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_var(--color-ink)]"
+            style={style}
+            aria-label={`Ver personajes de ${s.name}`}
+            data-saga={s.id}
           >
-            <span aria-hidden="true">{s.icon}</span>
-          </div>
-
-          <div class={`hidden h-12 w-1 shrink-0 rounded-full md:block bg-gradient-to-b ${s.color}`}></div>
-
-          <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-baseline gap-2">
-              <h3 class="font-display text-base uppercase tracking-wide text-[var(--color-text)] md:text-lg">
-                {s.name}
-              </h3>
-              <span class="font-mono text-[10px] font-bold text-[var(--color-text-muted)]">
-                [{s.year}]
-              </span>
-              {s.badge && (
-                <span
-                  class={`rounded bg-gradient-to-r ${s.color} px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white`}
-                >
-                  {s.badge}
-                </span>
-              )}
+            <div class="saga-bg" aria-hidden="true">
+              <img
+                src={bg}
+                alt=""
+                loading="lazy"
+                referrerpolicy="no-referrer"
+              />
+              <span
+                class="saga-bg-tint absolute inset-0"
+                style={`background:linear-gradient(120deg, ${palette.from}d0 0%, ${palette.from}80 35%, ${palette.to}55 70%, #0a0a0a40 100%);`}
+              />
+              <span
+                class="saga-bg-scan absolute inset-0 mix-blend-overlay opacity-30"
+                aria-hidden="true"
+              />
             </div>
-            <p class="mt-0.5 line-clamp-1 text-xs text-[var(--color-text-muted)] md:text-sm">
-              {s.desc}
-            </p>
-            <p class="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-ki-orange)]">
-              {s.count}
-            </p>
-          </div>
 
-          <div
-            class="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-[var(--color-ink)] bg-[var(--color-ki-yellow)] text-[var(--color-ink)] transition group-hover:translate-x-1"
-            style="box-shadow: 2px 2px 0 var(--color-ink);"
-            aria-hidden="true"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="h-5 w-5">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </div>
-        </a>
-      ))
+            <div class="relative flex min-h-[150px] flex-col justify-between p-4 md:min-h-[180px] md:p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span
+                    class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border-[2.5px] border-[var(--color-ink)] bg-[var(--color-bg-elevated)] text-2xl shadow-[2px_2px_0_var(--color-ink)]"
+                    aria-hidden="true"
+                  >
+                    {meta.icon}
+                  </span>
+                  <div class="min-w-0">
+                    <h3 class="font-[var(--font-display)] text-lg uppercase leading-none tracking-wide text-white drop-shadow-[2px_2px_0_rgba(0,0,0,0.7)] md:text-xl">
+                      {s.name}
+                    </h3>
+                    <span class="mt-1 inline-block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">
+                      [{meta.year}]
+                    </span>
+                  </div>
+                </div>
+
+                {meta.badge && (
+                  <span
+                    class="rounded border-[2px] border-[var(--color-ink)] bg-[var(--color-ki-yellow)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[var(--color-ink)] shadow-[2px_2px_0_var(--color-ink)]"
+                  >
+                    {meta.badge}
+                  </span>
+                )}
+              </div>
+
+              <p class="mt-3 line-clamp-2 text-xs text-white/90 drop-shadow-[1px_1px_0_rgba(0,0,0,0.8)] md:text-sm">
+                {meta.desc}
+              </p>
+
+              <div class="mt-3 flex items-center justify-between gap-2">
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full border-[2px] border-[var(--color-ink)] bg-[var(--color-bg-elevated)] px-2.5 py-1 font-[var(--font-display)] text-[10px] uppercase tracking-widest text-[var(--color-ink)] shadow-[2px_2px_0_var(--color-ink)]"
+                >
+                  <span class="h-1.5 w-1.5 rounded-full" style={`background:${palette.pill};`} aria-hidden="true"></span>
+                  {count} fighters
+                </span>
+
+                <span
+                  class="grid h-9 w-9 place-items-center rounded-full border-[2.5px] border-[var(--color-ink)] bg-[var(--color-ki-yellow)] text-[var(--color-ink)] transition-transform duration-200 group-hover:translate-x-1 shadow-[2px_2px_0_var(--color-ink)]"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="h-4 w-4">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <span
+              class="saga-corner saga-corner-tl"
+              aria-hidden="true"
+              style={`border-color:${palette.from};`}
+            />
+            <span
+              class="saga-corner saga-corner-tr"
+              aria-hidden="true"
+              style={`border-color:${palette.to};`}
+            />
+            <span
+              class="saga-corner saga-corner-bl"
+              aria-hidden="true"
+              style={`border-color:${palette.to};`}
+            />
+            <span
+              class="saga-corner saga-corner-br"
+              aria-hidden="true"
+              style={`border-color:${palette.from};`}
+            />
+          </a>
+        );
+      })
     }
   </div>
 </section>
+
+<style>
+  .saga-card {
+    isolation: isolate;
+  }
+  .saga-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 70% 30%, color-mix(in srgb, var(--saga-to) 45%, transparent) 0%, transparent 55%),
+      radial-gradient(circle at 25% 80%, color-mix(in srgb, var(--saga-from) 55%, transparent) 0%, transparent 60%),
+      linear-gradient(135deg, var(--saga-from) 0%, #0a0a0a 100%);
+  }
+  .saga-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 22%;
+    transform: scale(1.05);
+    transition: transform 0.5s ease, filter 0.4s ease;
+    filter: saturate(1.1) contrast(1.05);
+  }
+  .saga-card:hover .saga-bg img {
+    transform: scale(1.12);
+    filter: saturate(1.2) contrast(1.1) brightness(1.05);
+  }
+  .saga-bg-tint {
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    transition: opacity 0.3s;
+  }
+  .saga-card:hover .saga-bg-tint {
+    opacity: 0.92;
+  }
+  .saga-bg-scan {
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.05) 0px,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+  }
+
+  /* Esquina neón estilo fighter select */
+  .saga-corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+    z-index: 5;
+    transition: width 0.2s, height 0.2s;
+  }
+  .saga-corner-tl { top: 6px; left: 6px; border-top-width: 2.5px; border-left-width: 2.5px; }
+  .saga-corner-tr { top: 6px; right: 6px; border-top-width: 2.5px; border-right-width: 2.5px; }
+  .saga-corner-bl { bottom: 6px; left: 6px; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+  .saga-corner-br { bottom: 6px; right: 6px; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  .saga-card:hover .saga-corner { width: 18px; height: 18px; }
+</style>

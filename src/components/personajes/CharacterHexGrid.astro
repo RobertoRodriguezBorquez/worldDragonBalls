@@ -184,5 +184,14 @@ const firstAura = firstChar ? getCharacterAura(firstChar) : "#ff5722";
       cell.addEventListener("focus", () => update(cell));
       cell.addEventListener("touchstart", () => update(cell), { passive: true });
     });
+
+    const urlSaga = new URLSearchParams(location.search).get("saga");
+    if (urlSaga && urlSaga !== "all") {
+      const first = cells.find((c) => {
+        const list = (c.getAttribute("data-sagas") || "").split(",");
+        return list.includes(urlSaga);
+      });
+      if (first) update(first);
+    }
   })();
 </script>

@@ -1,18 +1,21 @@
 ---
 import type { CharacterFull } from "@lib/api";
-import CharacterHexGrid from "./CharacterHexGrid.astro";
+import { getCharacterAura } from "@lib/api";
 
 interface Props {
   characters: CharacterFull[];
 }
 const { characters } = Astro.props;
+
+const initial = characters[0];
+const initialAura = initial ? getCharacterAura(initial) : "#ff5722";
 ---
 
 <section id="character-select" class="mx-auto max-w-7xl px-4 py-8">
   <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
     <div class="section-banner">
       <span aria-hidden="true">⚔</span>
-      <span>Random Roster</span>
+      <span>Select Your Fighter</span>
     </div>
     <a
       href="/personajes"
@@ -22,10 +25,104 @@ const { characters } = Astro.props;
     </a>
   </div>
 
-  <CharacterHexGrid
-    characters={characters}
-    id="hex-grid-home"
-    randomLimit={8}
-    showcase={true}
-  />
+  <div
+    id="mk-roster"
+    class="mk-roster"
+    style={`--aura: ${initialAura};`}
+    data-rng-id="mk-roster"
+  >
+    <div class="mk-stage">
+      <div class="mk-stage-bg" aria-hidden="true"></div>
+      <div class="mk-stage-platform" aria-hidden="true"></div>
+      <div class="mk-stage-glow" aria-hidden="true"></div>
+      <div class="mk-stage-corner mk-corner-tl" aria-hidden="true"></div>
+      <div class="mk-stage-corner mk-corner-tr" aria-hidden="true"></div>
+      <div class="mk-stage-corner mk-corner-bl" aria-hidden="true"></div>
+      <div class="mk-stage-corner mk-corner-br" aria-hidden="true"></div>
+
+      <div class="mk-stage-card">
+        <img
+          id="mk-stage-img"
+          src={initial?.image}
+          alt={initial?.name}
+          loading="eager"
+          referrerpolicy="no-referrer"
+        />
+      </div>
+    </div>
+
+    <div class="mk-name-block">
+      <span class="mk-name-label">Select</span>
+      <h2 id="mk-name" class="mk-name">{initial?.name}</h2>
+    </div>
+
+    <div class="mk-rombo" id="mk-rombo-grid">
+      {
+        characters.map((c, idx) => {
+          const aura = getCharacterAura(c);
+          return (
+            <button
+              type="button"
+              class="mk-tile"
+              data-id={c.id}
+              data-name={c.name}
+              data-image={c.image}
+              data-aura={aura}
+              data-active={idx === 0 ? "true" : "false"}
+              style={`--aura: ${aura};`}
+              aria-label={`Seleccionar ${c.name}`}
+            >
+              <span class="mk-tile-num">{String(idx + 1).padStart(2, "0")}</span>
+              <span class="mk-tile-img">
+                <img
+                  src={c.image}
+                  alt={c.name}
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                />
+              </span>
+              <span class="mk-tile-name">{c.name}</span>
+            </button>
+          );
+        })
+      }
+    </div>
+  </div>
 </section>
+
+<script is:inline>
+  (() => {
+    const root = document.getElementById("mk-roster");
+    if (!root) return;
+    const stageImg = document.getElementById("mk-stage-img");
+    const nameEl = document.getElementById("mk-name");
+    const tiles = Array.from(root.querySelectorAll(".mk-tile"));
+
+    const update = (tile) => {
+      if (stageImg) {
+        stageImg.classList.add("fading");
+        setTimeout(() => {
+          stageImg.src = tile.dataset.image || "";
+          stageImg.alt = tile.dataset.name || "";
+          stageImg.classList.remove("fading");
+        }, 140);
+      }
+      if (nameEl) nameEl.textContent = tile.dataset.name || "";
+      root.style.setProperty("--aura", tile.dataset.aura || "#ff5722");
+      tiles.forEach((t) => t.setAttribute("data-active", "false"));
+      tile.setAttribute("data-active", "true");
+    };
+
+    tiles.forEach((tile) => {
+      tile.addEventListener("click", () => update(tile));
+      tile.addEventListener("mouseenter", () => update(tile));
+      tile.addEventListener("focus", () => update(tile));
+      tile.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          update(tile);
+        }
+      });
+    });
+  })();
+</script>

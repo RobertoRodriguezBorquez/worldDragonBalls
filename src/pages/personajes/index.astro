@@ -2,27 +2,96 @@
 import Layout from "@layouts/Layout.astro";
 import CharacterHexGrid from "@components/personajes/CharacterHexGrid.astro";
 import CharacterFilters from "@components/personajes/CharacterFilters.astro";
-import { getFeaturedCharacters } from "@lib/api";
+import {
+  getFeaturedCharacters,
+  BIG_SAGAS,
+  type BigSaga,
+} from "@lib/api";
 
 const characters = await getFeaturedCharacters();
 const races = [...new Set(characters.map((c) => c.race).filter(Boolean))].sort();
+
+const querySaga = Astro.url.searchParams.get("saga");
+const validBigSagas = BIG_SAGAS.map((s) => s.id) as readonly string[];
+const initialSaga: BigSaga | "all" = (validBigSagas as readonly string[]).includes(
+  querySaga ?? ""
+)
+  ? (querySaga as BigSaga)
+  : "all";
+
+const activeMeta =
+  initialSaga !== "all"
+    ? BIG_SAGAS.find((s) => s.id === initialSaga)
+    : undefined;
+
+const headingTitle = activeMeta
+  ? `Saga: ${activeMeta.name}`
+  : "Catálogo de personajes";
+const headingSubtitle = activeMeta
+  ? `Luchadores presentes en la saga ${activeMeta.name}.`
+  : "Explora todos los Saiyans, Namekians, androides y más del universo Dragon Ball.";
 ---
 
 <Layout
-  title="Personajes | World Dragon Balls"
+  title={`${activeMeta ? activeMeta.name + " | " : ""}Personajes | World Dragon Balls`}
   description="Catálogo completo de personajes de Dragon Ball: Goku, Vegeta, Frieza y más."
 >
   <section class="mx-auto max-w-7xl px-4 py-6">
-    <header class="mb-4">
-      <h1 class="text-3xl font-extrabold text-[var(--color-text)] md:text-4xl">
-        Catálogo de personajes
-      </h1>
-      <p class="mt-1 text-sm text-[var(--color-text-muted)]">
-        {characters.length} personajes disponibles
-      </p>
+    <header class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p
+          class="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-ki-orange)]"
+        >
+          /personajes
+        </p>
+        <h1
+          class="font-[var(--font-display)] text-3xl uppercase leading-none tracking-wide text-[var(--color-text)] md:text-4xl"
+        >
+          {headingTitle}
+        </h1>
+        <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+          {headingSubtitle} {characters.length} personajes disponibles.
+        </p>
+      </div>
+
+      {
+        activeMeta && (
+          <a
+            href="/personajes"
+            class="inline-flex items-center gap-1.5 rounded-full border-[2.5px] border-[var(--color-ink)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--color-text)] shadow-[2px_2px_0_var(--color-ink)] transition hover:-translate-y-0.5 hover:bg-[var(--color-ki-yellow)] hover:shadow-[3px_3px_0_var(--color-ink)]"
+            aria-label="Quitar filtro de saga"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              class="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.6"
+              stroke-linecap="round"
+            >
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+            Quitar filtro
+          </a>
+        )
+      }
     </header>
 
-    <CharacterFilters races={races} characters={characters} />
+    <CharacterFilters races={races} characters={characters} activeSaga={initialSaga} />
     <CharacterHexGrid characters={characters} id="character-hex" showcase={true} />
+
+    <div
+      id="empty-state"
+      class="hidden rounded-2xl border-[2.5px] border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center"
+      role="status"
+      aria-live="polite"
+    >
+      <p class="font-[var(--font-display)] text-lg uppercase tracking-wider text-[var(--color-text)]">
+        Sin resultados
+      </p>
+      <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+        Probá con otro filtro o limpiá la búsqueda.
+      </p>
+    </div>
   </section>
 </Layout>
