@@ -72,16 +72,14 @@ const initialAura = initial ? getCharacterAura(initial) : "#ff5722";
               style={`--aura: ${aura};`}
               aria-label={`Seleccionar ${c.name}`}
             >
-              <span class="mk-tile-num">{String(idx + 1).padStart(2, "0")}</span>
-              <span class="mk-tile-img">
+              <span class="mk-tile-shape">
                 <img
                   src={c.image}
-                  alt={c.name}
+                  alt=""
                   loading="lazy"
                   referrerpolicy="no-referrer"
                 />
               </span>
-              <span class="mk-tile-name">{c.name}</span>
             </button>
           );
         })
