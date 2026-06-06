@@ -12,20 +12,7 @@ const initial = characters[0];
 const initialAura = initial ? getCharacterAura(initial) : "#ff5722";
 ---
 
-<section id="character-select" class="mx-auto max-w-7xl px-4 py-8">
-  <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
-    <div class="section-banner">
-      <span aria-hidden="true">⚔</span>
-      <span>Select Your Fighter</span>
-    </div>
-    <a
-      href="/personajes"
-      class="text-sm font-bold uppercase tracking-wider text-[var(--color-ki-orange)] hover:underline"
-    >
-      Ver roster completo →
-    </a>
-  </div>
-
+<section id="character-select" class="mx-auto max-w-7xl px-4 py-6">
   <div
     id="mk-roster"
     class="mk-roster"
@@ -40,7 +27,6 @@ const initialAura = initial ? getCharacterAura(initial) : "#ff5722";
       <div class="mk-stage-corner mk-corner-tr" aria-hidden="true"></div>
       <div class="mk-stage-corner mk-corner-bl" aria-hidden="true"></div>
       <div class="mk-stage-corner mk-corner-br" aria-hidden="true"></div>
-
       <div class="mk-stage-card">
         <img
           id="mk-stage-img"
@@ -49,8 +35,8 @@ const initialAura = initial ? getCharacterAura(initial) : "#ff5722";
           loading="eager"
           decoding="async"
           referrerpolicy="no-referrer"
-          width="280"
-          height="320"
+          width="200"
+          height="220"
         />
       </div>
     </div>
@@ -60,7 +46,7 @@ const initialAura = initial ? getCharacterAura(initial) : "#ff5722";
       <h2 id="mk-name" class="mk-name">{initial?.name}</h2>
     </div>
 
-    <div class="mk-rombo" id="mk-rombo-grid">
+    <div class="mk-roster-grid" id="mk-roster-grid">
       {
         characters.map((c, idx) => {
           const aura = getCharacterAura(c);
@@ -77,15 +63,13 @@ const initialAura = initial ? getCharacterAura(initial) : "#ff5722";
               style={`--aura: ${aura};`}
               aria-label={`Seleccionar ${c.name}`}
             >
-              <span class="mk-tile-shape">
-                <img
-                  data-src={c.image}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  referrerpolicy="no-referrer"
-                />
-              </span>
+              <img
+                data-src={c.image}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                referrerpolicy="no-referrer"
+              />
             </button>
           );
         })
