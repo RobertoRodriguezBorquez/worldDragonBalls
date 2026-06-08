@@ -16,15 +16,15 @@ const {
   raceCount = 0,
 } = Astro.props;
 
-const starPoly = "12,9.2 12.68,11.07 14.66,11.13 13.09,12.36 13.65,14.26 12,13.15 10.35,14.26 10.91,12.36 9.34,11.13 11.32,11.07";
+const starPoly = "12,10.8 12.294,11.596 13.141,11.629 12.476,12.155 12.706,12.971 12,12.5 11.294,12.971 11.524,12.155 10.859,11.629 11.706,11.596";
 
 const starPositions = [
   [[0, 0]],
-  [[0, -3.8], [0, 3.8]],
-  [[0, -4], [3.5, 2], [-3.5, 2]],
-  [[0, -4.5], [-3.8, -0.5], [3.8, -0.5], [0, 3.2]],
-  [[0, -5], [4.76, -1.55], [2.94, 4.05], [-2.94, 4.05], [-4.76, -1.55]],
-  [[0, -5.8], [5.02, -2.9], [5.02, 2.9], [0, 5.8], [-5.02, 2.9], [-5.02, -2.9]],
+  [[0, -2.4], [0, 2.4]],
+  [[0, -2.5], [2.2, 1.3], [-2.2, 1.3]],
+  [[0, -2.9], [-2.5, -0.3], [2.5, -0.3], [0, 2.3]],
+  [[0, -3.1], [3.0, -1.0], [1.8, 2.5], [-1.8, 2.5], [-3.0, -1.0]],
+  [[0, -3.7], [3.2, -1.9], [3.2, 1.9], [0, 3.7], [-3.2, 1.9], [-3.2, -1.9]],
 ];
 
 let _starIdx = 0;
@@ -36,55 +36,74 @@ const dragonBalls = [1, 2, 3, 4, 5, 6].map((n) => ({
     return { ox, oy, delay };
   }),
 }));
+
+const scatterBalls = [
+  { cls: "left-[5%] top-[5%] md:left-[8%] md:top-[7%]", rot: -8 },
+  { cls: "right-[5%] top-[3%] md:right-[8%] md:top-[5%]", rot: 6 },
+  { cls: "left-[1%] top-[45%] hidden lg:block", rot: -5 },
+  { cls: "right-[2%] top-[40%] hidden lg:block", rot: 5 },
+  { cls: "left-[6%] bottom-[6%] md:left-[10%] md:bottom-[12%]", rot: -7 },
+  { cls: "right-[6%] bottom-[4%] md:right-[10%] md:bottom-[10%]", rot: 7 },
+];
 ---
 
 <section
   id="welcome"
-  class="relative mx-auto max-w-7xl overflow-hidden px-4 pb-8 pt-10 md:pb-12 md:pt-16"
+  class="relative mx-auto max-w-7xl overflow-hidden px-4 pb-10 pt-10 md:pb-14 md:pt-16"
 >
+  <!-- Welcome aura: centered glow -->
   <div
-    class="ki-aura pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 md:h-96 md:w-96"
-    style="filter: blur(18px);"
+    class="welcome-aura pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 md:h-96 md:w-96"
     aria-hidden="true"
-  ></div>
+  >
+    <div class="welcome-aura-glow"></div>
+  </div>
 
-  <div class="relative flex flex-col items-center text-center">
-    <div
-      class="mb-5 flex items-center justify-center gap-2 md:mb-6 md:gap-2.5"
-      role="img"
-      aria-label="Esferas del dragón: de 1 a 6 estrellas"
-    >
-      {
-        dragonBalls.map(({ n, stars }) => (
+  <!-- Scattered dragon balls -->
+  <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    {
+      dragonBalls.map(({ n, stars }, i) => (
+        <div
+          class={`absolute ${scatterBalls[i].cls} scatter-ball`}
+          style={`--rot: ${scatterBalls[i].rot}deg`}
+        >
           <svg
             viewBox="0 0 24 24"
-            class="db-ball h-11 w-11 md:h-14 md:w-14"
+            class="h-9 w-9 md:h-11 md:w-11"
             aria-hidden="true"
           >
             <defs>
-              <radialGradient id={`db-shine-${n}`} cx="0.35" cy="0.3" r="0.7">
-                <stop offset="0%" stop-color="#fff3cd" stop-opacity="0.85" />
-                <stop offset="60%" stop-color="var(--color-ki-orange, #ff5722)" stop-opacity="0" />
+              <radialGradient id={`ball-sct-${n}`} cx="0.4" cy="0.32" r="0.72">
+                <stop offset="0%" stop-color="#ffba8a" />
+                <stop offset="35%" stop-color="#f06820" />
+                <stop offset="80%" stop-color="#c04010" />
+                <stop offset="100%" stop-color="#7a1a08" />
               </radialGradient>
             </defs>
-            <circle cx="12" cy="12" r="10.5" fill={`url(#db-shine-${n})`} />
-            <circle cx="12" cy="12" r="10.5" fill="var(--color-ki-orange, #ff5722)" />
-            <circle cx="12" cy="12" r="10.5" fill="none" stroke="var(--color-ki-red, #e53935)" stroke-width="1.1" />
-            <g fill="var(--color-ki-red, #e53935)">
+            <circle cx="12" cy="12" r="10.5" fill={`url(#ball-sct-${n})`} />
+            <circle cx="12" cy="12" r="10.5" fill="none" stroke="#5a1004" stroke-width="0.5" />
+            <g fill="#8b1a08" stroke="#3a0804" stroke-width="0.25" stroke-linejoin="round">
               {stars.map(({ ox, oy, delay }) => (
-                <polygon
-                  class="db-star"
-                  style={`animation-delay:${delay}`}
-                  points={starPoly}
-                  transform={`translate(${ox} ${oy})`}
-                />
+                <g transform={`translate(${ox} ${oy})`}>
+                  <polygon
+                    class="db-star"
+                    points={starPoly}
+                    style={`animation-delay:${delay}`}
+                  />
+                </g>
               ))}
             </g>
+            <ellipse cx="9.2" cy="6.8" rx="2.3" ry="1.1" fill="#ffffff" opacity="0.8" transform="rotate(-35 9.2 6.8)" />
+            <ellipse cx="14.5" cy="5.6" rx="0.9" ry="0.5" fill="#ffffff" opacity="0.9" />
+            <ellipse cx="6.6" cy="10.4" rx="0.45" ry="0.9" fill="#ffffff" opacity="0.4" transform="rotate(-25 6.6 10.4)" />
           </svg>
-        ))
-      }
-    </div>
+        </div>
+      ))
+    }
+  </div>
 
+  <!-- Main content -->
+  <div class="relative z-10 flex flex-col items-center text-center">
     <span
       class="mb-4 inline-flex items-center gap-2 rounded-full border-[2.5px] border-[var(--color-ink)] bg-[var(--color-surface)] px-3 py-1 font-[var(--font-display)] text-[10px] uppercase tracking-[0.2em] text-[var(--color-text)] shadow-[2px_2px_0_var(--color-ink)] md:mb-5"
     >
@@ -93,7 +112,7 @@ const dragonBalls = [1, 2, 3, 4, 5, 6].map((n) => ({
     </span>
 
     <h1
-      class="font-[var(--font-display)] text-4xl uppercase leading-[0.95] tracking-tight text-[var(--color-text)] md:text-6xl lg:text-7xl"
+      class="welcome-title font-[var(--font-display)] text-4xl uppercase leading-[0.95] tracking-tight text-[var(--color-text)] md:text-6xl lg:text-7xl"
     >
       {dict.home.welcome.title}
     </h1>
@@ -108,7 +127,7 @@ const dragonBalls = [1, 2, 3, 4, 5, 6].map((n) => ({
       <span class="h-[2px] flex-1 bg-[var(--color-ink)]"></span>
     </div>
 
-    <p class="max-w-2xl text-sm text-[var(--color-text-muted)] md:text-base">
+    <p class="welcome-text max-w-2xl text-sm text-[var(--color-text-muted)] md:text-base">
       {dict.home.welcome.description}
     </p>
 
@@ -174,7 +193,7 @@ const dragonBalls = [1, 2, 3, 4, 5, 6].map((n) => ({
     <p
       class="mt-6 font-[var(--font-display)] text-[10px] uppercase tracking-[0.25em] text-[var(--color-text-muted)] md:mt-8"
     >
-      © {year} World Dragon Balls — {dict.home.welcome.tagline}
+      &copy; {year} World Dragon Balls &mdash; {dict.home.welcome.tagline}
     </p>
   </div>
 </section>
@@ -182,27 +201,64 @@ const dragonBalls = [1, 2, 3, 4, 5, 6].map((n) => ({
 <style>
   @keyframes db-twinkle {
     0%, 100% {
-      opacity: 0.35;
-      transform: scale(0.88);
+      opacity: 0.7;
+      transform: scale(0.92);
     }
     50% {
       opacity: 1;
-      transform: scale(1.08);
+      transform: scale(1.12);
     }
   }
+
   .db-star {
     transform-box: fill-box;
     transform-origin: center;
     animation: db-twinkle 1.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 1.5px var(--color-ki-red, #e53935));
+    filter: drop-shadow(0 0 0.4px rgba(255, 255, 255, 0.4))
+      drop-shadow(0 0 1px rgba(255, 193, 7, 0.5));
   }
-  .db-ball {
-    transition: transform 0.3s ease;
+
+  .scatter-ball {
+    transform: rotate(var(--rot));
+    transition: transform 0.3s ease, filter 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12))
+      drop-shadow(0 0 8px rgba(229, 57, 53, 0.18));
   }
-  .db-ball:hover {
-    transform: translateY(-2px) rotate(-4deg);
+  .scatter-ball:hover {
+    transform: rotate(calc(var(--rot) - 2deg)) scale(1.08);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18))
+      drop-shadow(0 0 14px rgba(229, 57, 53, 0.3));
   }
-  .db-ball:hover .db-star {
+  .scatter-ball:hover .db-star {
     animation-duration: 0.9s;
+  }
+
+  /* Welcome aura glow */
+  .welcome-aura-glow {
+    position: absolute;
+    inset: -25%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      var(--color-ki-yellow) 0%,
+      var(--color-ki-orange) 38%,
+      transparent 70%
+    );
+    animation: ki-aura-pulse 3s ease-in-out infinite;
+    filter: blur(22px);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Text readability over the aura glow */
+  .welcome-title {
+    text-shadow:
+      0 0 12px var(--color-bg-elevated),
+      0 0 24px var(--color-bg-elevated),
+      0 1px 3px var(--color-bg);
+  }
+
+  .welcome-text {
+    text-shadow: 0 0 8px var(--color-bg);
   }
 </style>
