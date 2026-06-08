@@ -905,8 +905,8 @@ body.intro-mode #site-header {
 /* Scouter lens container */
 .mk-stage-card {
   position: relative;
-  width: 240px;
-  height: 280px;
+  width: 260px;
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -948,7 +948,6 @@ body.intro-mode #site-header {
   height: 100%;
   object-fit: contain;
   object-position: center bottom;
-  clip-path: circle(46% at 50% 50%);
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7))
           drop-shadow(0 0 20px color-mix(in srgb, var(--aura) 40%, transparent));
   transition: opacity 0.18s, transform 0.4s, filter 0.5s;
@@ -1131,12 +1130,12 @@ body.intro-mode #site-header {
 
 /* Responsive */
 @media (max-width: 1023px) {
-  .mk-stage { height: 280px; }
-  .mk-stage-card { width: 200px; height: 230px; }
+  .mk-stage { height: 290px; }
+  .mk-stage-card { width: 220px; height: 250px; }
 }
 @media (max-width: 639px) {
-  .mk-stage { height: 230px; }
-  .mk-stage-card { width: 160px; height: 180px; }
+  .mk-stage { height: 240px; }
+  .mk-stage-card { width: 170px; height: 190px; }
   .mk-roster-grid { gap: 2px; }
   .mk-name { font-size: 1.2rem; }
 }
